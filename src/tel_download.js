@@ -348,7 +348,13 @@
 
   const getMediaMetadata = (url) => {
     try {
-      return JSON.parse(decodeURIComponent(url.split("/").pop()));
+      const decodedUrl = decodeURIComponent(url);
+      const firstBrace = decodedUrl.indexOf("{");
+      const lastBrace = decodedUrl.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        return JSON.parse(decodedUrl.slice(firstBrace, lastBrace + 1));
+      }
+      return {};
     } catch {
       return {};
     }
