@@ -4,7 +4,7 @@
 // @name:zh-CN   Telegram 受限图片视频下载器
 // @name:zh-TW   Telegram 受限圖片影片下載器
 // @name:ru      Telegram: загрузчик медиафайлов
-// @version      1.214
+// @version      1.215
 // @namespace    https://github.com/Neet-Nestor/Telegram-Media-Downloader
 // @updateURL    https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
 // @downloadURL  https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
@@ -40,7 +40,7 @@
   // https://github.com/morethanwords/tweb/blob/master/src/icons.ts
   const DOWNLOAD_ICON = "\ue979";
   const FORWARD_ICON = "\ue99a";
-  const contentRangeRegex = /^bytes (\d+)-(\d+)\/(\d+)$/;
+  const contentRangeRegex = /^bytes\s+(\d+)-(\d+)\/(\d+|\*)$/i;
   const REFRESH_DELAY = 500;
   const hashCode = (s) => {
     var h = 0,
@@ -125,16 +125,23 @@
     const innerContainer = document.getElementById(
       "tel-downloader-progress-" + videoId
     );
-    innerContainer.querySelector("p.filename").innerText = fileName;
+    if (!innerContainer) return;
+    const nameEl = innerContainer.querySelector("p.filename");
+    if (nameEl) nameEl.innerText = fileName;
     const progressBar = innerContainer.querySelector("div.progress");
-    progressBar.querySelector("p").innerText = progress + "%";
-    progressBar.querySelector("div").style.width = progress + "%";
+    if (progressBar) {
+      const p = progressBar.querySelector("p");
+      const div = progressBar.querySelector("div");
+      if (p) p.innerText = (isNaN(progress) || progress === null ? "" : progress) + "%";
+      if (div && !isNaN(progress)) div.style.width = Math.min(100, Math.max(0, progress)) + "%";
+    }
   };
 
   const completeProgress = (videoId) => {
     const progressBar = document
       .getElementById("tel-downloader-progress-" + videoId)
-      .querySelector("div.progress");
+      ?.querySelector("div.progress");
+    if (!progressBar) return;
     progressBar.querySelector("p").innerText = "Completed";
     progressBar.querySelector("div").style.backgroundColor = "#B6C649";
     progressBar.querySelector("div").style.width = "100%";
@@ -172,6 +179,11 @@
   };
 
   const tel_download_video = (url) => {
+    if (!url) {
+      logger.error("Empty URL provided to tel_download_video");
+      return;
+    }
+
     let _blobs = [];
     let _next_offset = 0;
     let _total_size = null;
@@ -194,104 +206,14 @@
         if (metadata.fileName) {
           fileName = metadata.fileName;
         }
+        if (metadata.size) {
+          _total_size = metadata.size;
+        }
       }
     } catch (e) {
       // Invalid JSON string, pass extracting fileName
     }
     logger.info(`URL: ${url}`, fileName);
-
-    const fetchNextPart = (_writable, currentFileName) => {
-      fetch(url, {
-        method: "GET",
-        headers: {
-          Range: `bytes=${_next_offset}-`,
-        },
-        "User-Agent":
-          "User-Agent Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/117.0",
-      })
-        .then((res) => {
-          if (![200, 206].includes(res.status)) {
-            throw new Error("Non 200/206 response was received: " + res.status);
-          }
-          const mime = res.headers.get("Content-Type").split(";")[0];
-          if (!mime.startsWith("video/")) {
-            throw new Error("Get non video response with MIME type " + mime);
-          }
-          _file_extension = mime.split("/")[1];
-          currentFileName =
-            currentFileName.substring(0, currentFileName.indexOf(".") + 1) + _file_extension;
-
-          const match = res.headers
-            .get("Content-Range")
-            .match(contentRangeRegex);
-
-          const startOffset = parseInt(match[1]);
-          const endOffset = parseInt(match[2]);
-          const totalSize = parseInt(match[3]);
-
-          if (startOffset !== _next_offset) {
-            logger.error("Gap detected between responses.", currentFileName);
-            logger.info("Last offset: " + _next_offset, currentFileName);
-            logger.info("New start offset " + match[1], currentFileName);
-            throw "Gap detected between responses.";
-          }
-          if (_total_size && totalSize !== _total_size) {
-            logger.error("Total size differs", currentFileName);
-            throw "Total size differs";
-          }
-
-          _next_offset = endOffset + 1;
-          _total_size = totalSize;
-
-          logger.info(
-            `Get response: ${res.headers.get(
-              "Content-Length"
-            )} bytes data from ${res.headers.get("Content-Range")}`,
-            currentFileName
-          );
-          logger.info(
-            `Progress: ${((_next_offset * 100) / _total_size).toFixed(0)}%`,
-            currentFileName
-          );
-          updateProgress(
-            videoId,
-            currentFileName,
-            ((_next_offset * 100) / _total_size).toFixed(0)
-          );
-          return res.blob();
-        })
-        .then((resBlob) => {
-          if (_writable !== null) {
-            _writable.write(resBlob).then(() => { });
-          } else {
-            _blobs.push(resBlob);
-          }
-        })
-        .then(() => {
-          if (!_total_size) {
-            throw new Error("_total_size is NULL");
-          }
-
-          if (_next_offset < _total_size) {
-            fetchNextPart(_writable, currentFileName);
-          } else {
-            if (_writable !== null) {
-              _writable.close().then(() => {
-                logger.info("Download finished", currentFileName);
-              });
-            } else {
-              save(currentFileName);
-            }
-            completeProgress(videoId);
-          }
-        })
-        .catch((reason) => {
-          logger.error(reason, currentFileName);
-          AbortProgress(videoId, () => {
-            fetchNextPart(_writable, currentFileName);
-          });
-        });
-    };
 
     const save = (currentFileName) => {
       logger.info("Finish downloading blobs", currentFileName);
@@ -311,6 +233,123 @@
       window.URL.revokeObjectURL(blobUrl);
 
       logger.info("Download triggered", currentFileName);
+    };
+
+    if (url.startsWith("blob:")) {
+      createProgressBar(videoId, fileName);
+      fetch(url)
+        .then((res) => {
+          if (!res.ok) throw new Error("Blob fetch status: " + res.status);
+          return res.blob();
+        })
+        .then((blob) => {
+          _blobs = [blob];
+          save(fileName);
+          completeProgress(videoId);
+        })
+        .catch((err) => {
+          logger.error(err, fileName);
+          AbortProgress(videoId, () => tel_download_video(url));
+        });
+      return;
+    }
+
+    const fetchNextPart = (_writable, currentFileName) => {
+      fetch(url, {
+        method: "GET",
+        headers: {
+          Range: `bytes=${_next_offset}-`,
+        },
+      })
+        .then((res) => {
+          if (![200, 206].includes(res.status)) {
+            throw new Error("Non 200/206 response was received: " + res.status);
+          }
+
+          const contentType = res.headers.get("Content-Type") || "";
+          const mime = contentType.split(";")[0].toLowerCase().trim();
+          if (mime.startsWith("video/")) {
+            _file_extension = mime.split("/")[1];
+            if (currentFileName.includes(".")) {
+              currentFileName =
+                currentFileName.substring(0, currentFileName.lastIndexOf(".") + 1) + _file_extension;
+            }
+          }
+
+          const contentRange = res.headers.get("Content-Range");
+          let startOffset = _next_offset;
+          let endOffset = _next_offset;
+          let totalSize = _total_size;
+
+          if (contentRange) {
+            const match = contentRange.match(contentRangeRegex);
+            if (match) {
+              startOffset = parseInt(match[1]);
+              endOffset = parseInt(match[2]);
+              if (match[3] !== "*") {
+                totalSize = parseInt(match[3]);
+              }
+            }
+          } else if (res.status === 200) {
+            const contentLength = res.headers.get("Content-Length");
+            if (contentLength) {
+              totalSize = parseInt(contentLength);
+              endOffset = totalSize - 1;
+            }
+          }
+
+          if (startOffset !== _next_offset) {
+            logger.info("Gap detected between responses.", currentFileName);
+            _next_offset = startOffset;
+          }
+
+          _next_offset = endOffset + 1;
+          if (totalSize) _total_size = totalSize;
+
+          logger.info(
+            `Get response: ${res.headers.get("Content-Length")} bytes data from ${contentRange || "200 OK"}`,
+            currentFileName
+          );
+          if (_total_size) {
+            logger.info(
+              `Progress: ${((_next_offset * 100) / _total_size).toFixed(0)}%`,
+              currentFileName
+            );
+            updateProgress(
+              videoId,
+              currentFileName,
+              ((_next_offset * 100) / _total_size).toFixed(0)
+            );
+          }
+          return res.blob();
+        })
+        .then((resBlob) => {
+          if (_writable !== null) {
+            _writable.write(resBlob).then(() => { });
+          } else {
+            _blobs.push(resBlob);
+          }
+        })
+        .then(() => {
+          if (_total_size && _next_offset < _total_size) {
+            fetchNextPart(_writable, currentFileName);
+          } else {
+            if (_writable !== null) {
+              _writable.close().then(() => {
+                logger.info("Download finished", currentFileName);
+              });
+            } else {
+              save(currentFileName);
+            }
+            completeProgress(videoId);
+          }
+        })
+        .catch((reason) => {
+          logger.error(reason, currentFileName);
+          AbortProgress(videoId, () => {
+            fetchNextPart(_writable, currentFileName);
+          });
+        });
     };
 
     const supportsFileSystemAccess =
@@ -335,12 +374,16 @@
               createProgressBar(videoId, handle.name);
             })
             .catch((err) => {
-              console.error(err.name, err.message);
+              console.error("createWritable failed, fallback to in-memory download:", err);
+              fetchNextPart(null, handle.name);
+              createProgressBar(videoId, handle.name);
             });
         })
         .catch((err) => {
           if (err.name !== "AbortError") {
-            console.error(err.name, err.message);
+            console.error("SaveFilePicker error, fallback to in-memory download:", err);
+            fetchNextPart(null, fileName);
+            createProgressBar(videoId, fileName);
           }
         });
     } else {
@@ -350,6 +393,7 @@
   };
 
   const tel_download_audio = (url) => {
+    if (!url) return;
     let _blobs = [];
     let _next_offset = 0;
     let _total_size = null;
@@ -358,98 +402,6 @@
       (Math.random() + 1).toString(36).substring(2, 10) +
       "_" +
       Date.now().toString();
-
-    const fetchNextPart = (_writable, currentFileName) => {
-      fetch(url, {
-        method: "GET",
-        headers: {
-          Range: `bytes=${_next_offset}-`,
-        },
-      })
-        .then((res) => {
-          if (res.status !== 206 && res.status !== 200) {
-            logger.error(
-              "Non 200/206 response was received: " + res.status,
-              currentFileName
-            );
-            return;
-          }
-
-          const mime = res.headers.get("Content-Type").split(";")[0];
-          if (!mime.startsWith("audio/")) {
-            logger.error(
-              "Get non audio response with MIME type " + mime,
-              currentFileName
-            );
-            throw "Get non audio response with MIME type " + mime;
-          }
-
-          try {
-            const match = res.headers
-              .get("Content-Range")
-              .match(contentRangeRegex);
-
-            const startOffset = parseInt(match[1]);
-            const endOffset = parseInt(match[2]);
-            const totalSize = parseInt(match[3]);
-
-            if (startOffset !== _next_offset) {
-              logger.error("Gap detected between responses.");
-              logger.info("Last offset: " + _next_offset);
-              logger.info("New start offset " + match[1]);
-              throw "Gap detected between responses.";
-            }
-            if (_total_size && totalSize !== _total_size) {
-              logger.error("Total size differs");
-              throw "Total size differs";
-            }
-
-            _next_offset = endOffset + 1;
-            _total_size = totalSize;
-          } finally {
-            if (_total_size) {
-              logger.info(
-                `Get response: ${res.headers.get(
-                  "Content-Length"
-                )} bytes data from ${res.headers.get("Content-Range")}`
-              );
-              updateProgress(
-                videoId,
-                currentFileName,
-                ((_next_offset * 100) / _total_size).toFixed(0)
-              );
-            }
-            return res.blob();
-          }
-        })
-        .then((resBlob) => {
-          if (_writable !== null) {
-            _writable.write(resBlob).then(() => { });
-          } else {
-            _blobs.push(resBlob);
-          }
-        })
-        .then(() => {
-          if (_next_offset < _total_size) {
-            fetchNextPart(_writable, currentFileName);
-          } else {
-            if (_writable !== null) {
-              _writable.close().then(() => {
-                logger.info("Download finished", currentFileName);
-              });
-            } else {
-              save(currentFileName);
-            }
-            completeProgress(videoId);
-          }
-        })
-        .catch((reason) => {
-          logger.error(reason, currentFileName);
-          AbortProgress(videoId, () => {
-            fetchNextPart(_writable, currentFileName);
-          });
-        });
-    };
 
     const save = (currentFileName) => {
       logger.info(
@@ -475,6 +427,110 @@
       logger.info("Download triggered", currentFileName);
     };
 
+    if (url.startsWith("blob:")) {
+      createProgressBar(videoId, fileName);
+      fetch(url)
+        .then((res) => {
+          if (!res.ok) throw new Error("Audio blob status: " + res.status);
+          return res.blob();
+        })
+        .then((blob) => {
+          _blobs = [blob];
+          save(fileName);
+          completeProgress(videoId);
+        })
+        .catch((err) => {
+          logger.error(err, fileName);
+          AbortProgress(videoId, () => tel_download_audio(url));
+        });
+      return;
+    }
+
+    const fetchNextPart = (_writable, currentFileName) => {
+      fetch(url, {
+        method: "GET",
+        headers: {
+          Range: `bytes=${_next_offset}-`,
+        },
+      })
+        .then((res) => {
+          if (res.status !== 206 && res.status !== 200) {
+            logger.error(
+              "Non 200/206 response was received: " + res.status,
+              currentFileName
+            );
+            throw new Error("Non 200/206 status: " + res.status);
+          }
+
+          const contentRange = res.headers.get("Content-Range");
+          let startOffset = _next_offset;
+          let endOffset = _next_offset;
+          let totalSize = _total_size;
+
+          if (contentRange) {
+            const match = contentRange.match(contentRangeRegex);
+            if (match) {
+              startOffset = parseInt(match[1]);
+              endOffset = parseInt(match[2]);
+              if (match[3] !== "*") {
+                totalSize = parseInt(match[3]);
+              }
+            }
+          } else if (res.status === 200) {
+            const contentLength = res.headers.get("Content-Length");
+            if (contentLength) {
+              totalSize = parseInt(contentLength);
+              endOffset = totalSize - 1;
+            }
+          }
+
+          if (startOffset !== _next_offset) {
+            _next_offset = startOffset;
+          }
+          _next_offset = endOffset + 1;
+          if (totalSize) _total_size = totalSize;
+
+          if (_total_size) {
+            logger.info(
+              `Get response: ${res.headers.get("Content-Length")} bytes data from ${contentRange || "200 OK"}`
+            );
+            updateProgress(
+              videoId,
+              currentFileName,
+              ((_next_offset * 100) / _total_size).toFixed(0)
+            );
+          }
+          return res.blob();
+        })
+        .then((resBlob) => {
+          if (_writable !== null) {
+            _writable.write(resBlob).then(() => { });
+          } else {
+            _blobs.push(resBlob);
+          }
+        })
+        .then(() => {
+          if (_total_size && _next_offset < _total_size) {
+            fetchNextPart(_writable, currentFileName);
+          } else {
+            if (_writable !== null) {
+              _writable.close().then(() => {
+                logger.info("Download finished", currentFileName);
+              });
+            } else {
+              save(currentFileName);
+            }
+            completeProgress(videoId);
+          }
+        })
+        .catch((reason) => {
+          logger.error(reason, currentFileName);
+          AbortProgress(videoId, () => {
+            fetchNextPart(_writable, currentFileName);
+          });
+        });
+    };
+
     const supportsFileSystemAccess =
       "showSaveFilePicker" in unsafeWindow &&
       (() => {
@@ -497,12 +553,16 @@
               createProgressBar(videoId, handle.name);
             })
             .catch((err) => {
-              console.error(err.name, err.message);
+              console.error("Audio createWritable failed, fallback to in-memory download:", err);
+              fetchNextPart(null, handle.name);
+              createProgressBar(videoId, handle.name);
             });
         })
         .catch((err) => {
           if (err.name !== "AbortError") {
-            console.error(err.name, err.message);
+            console.error("Audio SaveFilePicker error, fallback to in-memory download:", err);
+            fetchNextPart(null, fileName);
+            createProgressBar(videoId, fileName);
           }
         });
     } else {
