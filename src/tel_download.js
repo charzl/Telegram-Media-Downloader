@@ -234,7 +234,7 @@
       return;
     }
   };
-  const contentRangeRegex = /^bytes (\d+)-(\d+)\/(\d+)$/;
+  const contentRangeRegex = /^bytes\s+(\d+)-(\d+)\/(\d+|\*)$/i;
   const REFRESH_DELAY = 2000;
   const DOWNLOAD_CHUNK_SIZE = 4 * 1024 * 1024;
   const fetchMediaPart = async (url, offset, total, kind, options = {}) => {
@@ -257,13 +257,18 @@
     try {
       checkAborted();
       const res = await fetch(url, {
-        headers: { Range: `bytes=${offset}-${offset + DOWNLOAD_CHUNK_SIZE - 1}` },
+        headers: url.startsWith("blob:") ? {} : { Range: `bytes=${offset}-${offset + DOWNLOAD_CHUNK_SIZE - 1}` },
         signal: controller.signal,
       });
       if (res.status !== 200 && res.status !== 206) {
         throw downloadError("errorHttp", { status: res.status });
       }
-      const mime = res.headers.get("Content-Type")?.split(";")[0].trim().toLowerCase();
+      let mime = res.headers.get("Content-Type")?.split(";")[0].trim().toLowerCase();
+      if (kind !== "image" && (!mime || mime === "application/octet-stream")) {
+        const metadataMime = getMediaMetadata(url)?.mimeType;
+        mime = typeof metadataMime === "string" && metadataMime.startsWith(`${kind}/`)
+          ? metadataMime.toLowerCase() : kind === "video" ? "video/mp4" : "audio/ogg";
+      }
       if (!mime?.startsWith(`${kind}/`)) {
         throw downloadError("errorMime", { kind, mime });
       }
@@ -272,7 +277,9 @@
       if (res.status === 206) {
         const match = res.headers.get("Content-Range")?.match(contentRangeRegex);
         if (!match) throw downloadError("errorRangeMissing");
-        const [start, end, size] = match.slice(1).map(Number);
+        const start = Number(match[1]);
+        const end = Number(match[2]);
+        const size = match[3] === "*" ? total ?? getMediaMetadata(url)?.size : Number(match[3]);
         if (![start, end, size].every(Number.isSafeInteger) ||
             start !== offset || end < start || size <= end ||
             (total !== null && total !== size)) {
@@ -521,7 +528,15 @@
       checkCancelled();
       task.state = "preparing";
       renderTask(task);
-      if (task.handle) writable = await task.handle.createWritable();
+      if (task.handle) {
+        try {
+          writable = await task.handle.createWritable();
+        } catch (error) {
+          if (error.name === "AbortError") throw error;
+          // A denied file handle can still use the browser's download flow.
+          logger.info(`Cannot open file; using browser download: ${error.message}`, task.fileName);
+        }
+      }
       checkCancelled();
       task.state = "downloading";
       task.startedAt = performance.now();
@@ -628,11 +643,12 @@
         Promise.resolve(pageWindow.showSaveFilePicker({ suggestedName: task.fileName }))
           .then(enqueue, (error) => {
             if (error.name === "AbortError") finishTask(task, "cancelled");
-            else finishTask(task, "failed", error);
+            else enqueue(null);
           });
       } else enqueue(null);
     } catch (error) {
-      finishTask(task, "failed", error);
+      if (error.name === "AbortError") finishTask(task, "cancelled");
+      else enqueue(null);
     }
     return task.promise;
   };

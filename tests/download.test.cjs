@@ -182,7 +182,7 @@ test('filenames preserve dots and saved types follow the response MIME', async (
   }
 });
 
-test('picker cancellation and writer creation failures do not start a request', async () => {
+test('picker cancellation stops requests and writer creation failures use browser downloads', async () => {
   for (const cancel of [false, true]) {
     page = await openPage(browser);
     const result = await page.evaluate(async cancel => {
@@ -193,9 +193,9 @@ test('picker cancellation and writer creation failures do not start a request', 
       await downloads.video('https://test.invalid/video');
       return { requests: requests.length, saved: saved.length, errors };
     }, cancel);
-    assert.equal(result.requests, 0);
-    assert.equal(result.saved, 0);
-    assert.equal(result.errors.length, cancel ? 0 : 1);
+    assert.equal(result.requests, cancel ? 0 : 1);
+    assert.equal(result.saved, cancel ? 0 : 1);
+    assert.equal(result.errors.length, 0);
     await page.close();
   }
 });
