@@ -299,7 +299,7 @@
           }
 
           if (startOffset !== _next_offset) {
-            logger.warn("Gap detected between responses.", currentFileName);
+            logger.info("Gap detected between responses.", currentFileName);
             _next_offset = startOffset;
           }
 
