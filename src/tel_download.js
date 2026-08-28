@@ -42,6 +42,8 @@
   const FORWARD_ICON = "\ue99a";
   const contentRangeRegex = /^bytes\s+(\d+)-(\d+)\/(\d+|\*)$/i;
   const REFRESH_DELAY = 500;
+  const MAX_AUTO_RETRIES = 10;
+  const RETRY_DELAY_MS = 30000;
   const hashCode = (s) => {
     var h = 0,
       l = s.length,
@@ -178,6 +180,15 @@
     }
   };
 
+  const showRetrying = (videoId, attempt, maxAttempts) => {
+    const progressBar = document
+      .getElementById("tel-downloader-progress-" + videoId)
+      ?.querySelector("div.progress");
+    if (!progressBar) return;
+    const p = progressBar.querySelector("p");
+    if (p) p.innerText = `Retrying ${attempt}/${maxAttempts}...`;
+  };
+
   const tel_download_video = (url) => {
     if (!url) {
       logger.error("Empty URL provided to tel_download_video");
@@ -188,6 +199,7 @@
     let _next_offset = 0;
     let _total_size = null;
     let _file_extension = "mp4";
+    let _retryCount = 0;
 
     const videoId =
       (Math.random() + 1).toString(36).substring(2, 10) +
@@ -237,20 +249,32 @@
 
     if (url.startsWith("blob:")) {
       createProgressBar(videoId, fileName);
-      fetch(url)
-        .then((res) => {
-          if (!res.ok) throw new Error("Blob fetch status: " + res.status);
-          return res.blob();
-        })
-        .then((blob) => {
-          _blobs = [blob];
-          save(fileName);
-          completeProgress(videoId);
-        })
-        .catch((err) => {
-          logger.error(err, fileName);
-          AbortProgress(videoId, () => tel_download_video(url));
-        });
+      const fetchBlob = () => {
+        fetch(url)
+          .then((res) => {
+            if (!res.ok) throw new Error("Blob fetch status: " + res.status);
+            return res.blob();
+          })
+          .then((blob) => {
+            _blobs = [blob];
+            save(fileName);
+            completeProgress(videoId);
+          })
+          .catch((err) => {
+            logger.error(err, fileName);
+            if (_retryCount < MAX_AUTO_RETRIES) {
+              _retryCount++;
+              showRetrying(videoId, _retryCount, MAX_AUTO_RETRIES);
+              setTimeout(fetchBlob, RETRY_DELAY_MS);
+            } else {
+              AbortProgress(videoId, () => {
+                _retryCount = 0;
+                fetchBlob();
+              });
+            }
+          });
+      };
+      fetchBlob();
       return;
     }
 
@@ -324,6 +348,7 @@
           return res.blob();
         })
         .then((resBlob) => {
+          _retryCount = 0;
           if (_writable !== null) {
             _writable.write(resBlob).then(() => { });
           } else {
@@ -346,9 +371,19 @@
         })
         .catch((reason) => {
           logger.error(reason, currentFileName);
-          AbortProgress(videoId, () => {
-            fetchNextPart(_writable, currentFileName);
-          });
+          if (_retryCount < MAX_AUTO_RETRIES) {
+            _retryCount++;
+            logger.info(`Retrying (${_retryCount}/${MAX_AUTO_RETRIES}) in ${RETRY_DELAY_MS / 1000}s...`, currentFileName);
+            showRetrying(videoId, _retryCount, MAX_AUTO_RETRIES);
+            setTimeout(() => {
+              fetchNextPart(_writable, currentFileName);
+            }, RETRY_DELAY_MS);
+          } else {
+            AbortProgress(videoId, () => {
+              _retryCount = 0;
+              fetchNextPart(_writable, currentFileName);
+            });
+          }
         });
     };
 
@@ -397,6 +432,7 @@
     let _blobs = [];
     let _next_offset = 0;
     let _total_size = null;
+    let _retryCount = 0;
     const fileName = hashCode(url).toString(36) + ".ogg";
     const videoId =
       (Math.random() + 1).toString(36).substring(2, 10) +
@@ -429,20 +465,32 @@
 
     if (url.startsWith("blob:")) {
       createProgressBar(videoId, fileName);
-      fetch(url)
-        .then((res) => {
-          if (!res.ok) throw new Error("Audio blob status: " + res.status);
-          return res.blob();
-        })
-        .then((blob) => {
-          _blobs = [blob];
-          save(fileName);
-          completeProgress(videoId);
-        })
-        .catch((err) => {
-          logger.error(err, fileName);
-          AbortProgress(videoId, () => tel_download_audio(url));
-        });
+      const fetchBlob = () => {
+        fetch(url)
+          .then((res) => {
+            if (!res.ok) throw new Error("Audio blob status: " + res.status);
+            return res.blob();
+          })
+          .then((blob) => {
+            _blobs = [blob];
+            save(fileName);
+            completeProgress(videoId);
+          })
+          .catch((err) => {
+            logger.error(err, fileName);
+            if (_retryCount < MAX_AUTO_RETRIES) {
+              _retryCount++;
+              showRetrying(videoId, _retryCount, MAX_AUTO_RETRIES);
+              setTimeout(fetchBlob, RETRY_DELAY_MS);
+            } else {
+              AbortProgress(videoId, () => {
+                _retryCount = 0;
+                fetchBlob();
+              });
+            }
+          });
+      };
+      fetchBlob();
       return;
     }
 
@@ -503,6 +551,7 @@
           return res.blob();
         })
         .then((resBlob) => {
+          _retryCount = 0;
           if (_writable !== null) {
             _writable.write(resBlob).then(() => { });
           } else {
@@ -525,9 +574,18 @@
         })
         .catch((reason) => {
           logger.error(reason, currentFileName);
-          AbortProgress(videoId, () => {
-            fetchNextPart(_writable, currentFileName);
-          });
+          if (_retryCount < MAX_AUTO_RETRIES) {
+            _retryCount++;
+            showRetrying(videoId, _retryCount, MAX_AUTO_RETRIES);
+            setTimeout(() => {
+              fetchNextPart(_writable, currentFileName);
+            }, RETRY_DELAY_MS);
+          } else {
+            AbortProgress(videoId, () => {
+              _retryCount = 0;
+              fetchNextPart(_writable, currentFileName);
+            });
+          }
         });
     };
 
