@@ -135,6 +135,31 @@ test('another tab cannot resume or delete an active download', async () => {
   assert.equal(await second.evaluate(() => blobs[0].text()), 'abcdefghi');
 });
 
+test('resuming waits for a short lock handover instead of rejecting the new owner', async () => {
+  context = await browser.newContext();
+  const first = await openPage(browser, '', '/k/', { context });
+  await interruptedDownload(first);
+  await first.close();
+  const second = await openPage(browser, '', '/k/', { context });
+  await second.evaluate(() => {
+    const id = document.querySelector('.tel-task').id.replace('tel-downloader-progress-', '');
+    window.handover = navigator.locks.request('tel-media-download:' + id, () => new Promise(resolve => {
+      window.releaseHandover = resolve;
+    }));
+  });
+  await second.waitForFunction(() => typeof releaseHandover === 'function');
+  const done = finishResumedDownload(second);
+  // Attach a rejection handler immediately while coordinating the lock owner.
+  done.catch(() => {});
+  await second.waitForFunction(async () => {
+    const { pending } = await navigator.locks.query();
+    return pending.some(lock => lock.name.startsWith('tel-media-download:'));
+  });
+  await second.evaluate(() => releaseHandover());
+  await done;
+  assert.equal(await second.evaluate(() => blobs[0].text()), 'abcdefghi');
+});
+
 test('removing an interrupted task deletes its saved bytes and it is not restored', async () => {
   context = await browser.newContext();
   const first = await openPage(browser, '', '/k/', { context });

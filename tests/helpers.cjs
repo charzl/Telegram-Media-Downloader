@@ -53,6 +53,13 @@ exports.openPage = async (browser, html = '', pathname = '/k/', options = {}) =>
       return response(/\.(jpg|jpeg|png)$/.test(url) ? 'image/jpeg' : 'video/mp4', 'bytes 0-2/3');
     };
     window.settle = () => new Promise(resolve => setTimeout(resolve, 50));
+    window.waitUntil = async condition => {
+      const deadline = performance.now() + 5000;
+      while (!await condition()) {
+        if (performance.now() > deadline) throw new Error('Timed out waiting for download state');
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+    };
   });
   if (options.beforeScript) await page.evaluate(options.beforeScript);
   await exports.installScript(page);

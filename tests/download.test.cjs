@@ -16,8 +16,7 @@ test('audio errors never produce a downloaded file', async () => {
     page = await openPage(browser);
     const result = await page.evaluate(async sample => {
       fetch = async () => response('audio/ogg', sample.range, 'abc', sample.status);
-      downloads.audio('https://test.invalid/audio');
-      await settle();
+      await downloads.audio('https://test.invalid/audio');
       return { saved: saved.length, errors };
     }, sample);
     assert.equal(result.saved, 0);
@@ -30,8 +29,7 @@ test('valid audio still downloads', async () => {
   page = await openPage(browser);
   const result = await page.evaluate(async () => {
     fetch = async () => response('audio/ogg', 'bytes 0-2/3');
-    downloads.audio('https://test.invalid/audio');
-    await settle();
+    await downloads.audio('https://test.invalid/audio');
     return { saved: saved.length, body: await blobs[0]?.text(), errors };
   });
   assert.deepEqual(result, { saved: 1, body: 'abc', errors: [] });
@@ -70,14 +68,14 @@ test('disk completion waits for write and close', async () => {
       close: () => new Promise(resolve => { events.push('close'); finishClose = resolve; }),
       abort: async () => {},
     }) });
-    downloads.video('https://test.invalid/video');
-    await settle();
+    const done = downloads.video('https://test.invalid/video');
+    await waitUntil(() => typeof finishWrite === 'function');
     const beforeWrite = [...events];
     finishWrite();
-    await settle();
+    await waitUntil(() => typeof finishClose === 'function');
     const beforeClose = document.querySelector('.progress p').textContent;
     finishClose();
-    await settle();
+    await done;
     return { beforeWrite, beforeClose, final: document.querySelector('.progress p').textContent, errors };
   });
   assert.deepEqual(result.beforeWrite, ['write']);
@@ -92,11 +90,11 @@ test('dismissing progress does not cancel a download or break error handling', a
     const result = await page.evaluate(async fail => {
       let respond;
       fetch = () => new Promise(resolve => { respond = resolve; });
-      downloads.video('https://test.invalid/video');
+      const done = downloads.video('https://test.invalid/video');
       document.querySelector('[data-action="dismiss"]').click();
-      await settle();
+      await waitUntil(() => typeof respond === 'function');
       respond(response('video/mp4', fail ? null : 'bytes 0-2/3', 'abc', fail ? 500 : 206));
-      await settle();
+      await done;
       return { saved: saved.length, errors };
     }, fail);
     assert.equal(result.saved, fail ? 0 : 1);
@@ -111,8 +109,7 @@ test('complete HTTP 200 responses work for video and audio', async () => {
     page = await openPage(browser);
     const result = await page.evaluate(async kind => {
       fetch = async () => response(kind === 'video' ? 'video/mp4' : 'audio/ogg', null, 'complete', 200);
-      downloads[kind]('https://test.invalid/media');
-      await settle();
+      await downloads[kind]('https://test.invalid/media');
       return { body: await blobs[0]?.text(), errors };
     }, kind);
     assert.deepEqual(result, { body: 'complete', errors: [] });
@@ -129,8 +126,7 @@ test('partial responses are validated and assembled in order', async () => {
         ? response('video/mp4', 'bytes 0-2/6', 'abc')
         : response('video/mp4', 'bytes 3-5/6', 'def');
     };
-    downloads.video('https://test.invalid/video');
-    await settle();
+    await downloads.video('https://test.invalid/video');
     return { body: await blobs[0]?.text(), requests, errors };
   });
   assert.equal(result.body, 'abcdef');
@@ -152,8 +148,7 @@ test('truncation, changing totals, overlapping ranges and ignored continuation r
         if (failure === 'ignored-range') return response('video/mp4', null, 'abcdef', 200);
         return response('video/mp4', failure === 'overlap' ? 'bytes 0-2/6' : 'bytes 3-5/9', 'def');
       };
-      downloads.video('https://test.invalid/video');
-      await settle();
+      await downloads.video('https://test.invalid/video');
       return { saved: saved.length, errors };
     }, failure);
     assert.equal(result.saved, 0, failure);
@@ -173,8 +168,7 @@ test('filenames preserve dots and saved types follow the response MIME', async (
     page = await openPage(browser);
     const result = await page.evaluate(async sample => {
       fetch = async () => response(sample.mime, null, 'abc', 200);
-      downloads[sample.kind]('https://test.invalid/stream/' + encodeURIComponent(JSON.stringify({ fileName: sample.name })));
-      await settle();
+      await downloads[sample.kind]('https://test.invalid/stream/' + encodeURIComponent(JSON.stringify({ fileName: sample.name })));
       return { name: saved[0]?.name, mime: blobs[0]?.type, errors };
     }, sample);
     assert.deepEqual(result, { name: sample.expected, mime: sample.mime, errors: [] });

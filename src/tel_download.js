@@ -566,10 +566,18 @@
   });
   const withResumeLock = async (task, work) => {
     if (!navigator.locks) throw downloadError("errorStorage", { message: "Web Locks are unavailable in this browser" });
-    return navigator.locks.request(`tel-media-download:${task.id}`, { ifAvailable: true }, lock => {
-      if (!lock) throw downloadError("errorBusy");
-      return work();
-    });
+    const acquisition = new AbortController();
+    // Browser processes can release an old lock slightly after its caller's
+    // promise settles. Queue a brief handover instead of racing ifAvailable.
+    const timer = setTimeout(() => acquisition.abort(downloadError("errorBusy")), 1000);
+    try {
+      return await navigator.locks.request(`tel-media-download:${task.id}`, { signal: acquisition.signal }, () => {
+        clearTimeout(timer);
+        return work();
+      });
+    } catch (error) {
+      throw acquisition.signal.aborted ? acquisition.signal.reason : error;
+    } finally { clearTimeout(timer); }
   };
   const getDownloadKey = (url, kind) => {
     const metadata = getMediaMetadata(url);

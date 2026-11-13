@@ -16,7 +16,7 @@ test('duplicate clicks share one download and can restore a dismissed card', asy
     document.querySelector('[data-action="dismiss"]').click();
     const second = downloads.video('https://test.invalid/video');
     const cards = document.querySelectorAll('.tel-task').length;
-    await settle();
+    await waitUntil(() => typeof respond === 'function');
     respond(response('video/mp4', 'bytes 0-2/3'));
     await first;
     return { same: first === second, calls, cards, saved: saved.length, errors };
@@ -35,9 +35,9 @@ test('cancelling a streamed download aborts the request and unfinished file', as
       start(controller) { stream = controller; }, cancel() { cancelledBody++; },
     }), { status: 206, headers: { 'Content-Type': 'video/mp4', 'Content-Range': 'bytes 0-5/6' } });
     const done = downloads.video('https://test.invalid/video');
-    await settle();
+    await waitUntil(() => typeof stream !== 'undefined');
     stream.enqueue(new Uint8Array([1, 2, 3]));
-    await settle();
+    await waitUntil(() => document.querySelector('.tel-task-details').textContent.startsWith('3 B'));
     document.querySelector('[data-action="cancel"]').click();
     await done;
     return { aborted, closed, cancelledBody, saved: saved.length, state: document.querySelector('.tel-task').dataset.state, errors };
@@ -51,10 +51,10 @@ test('only two downloads run at once and completing one starts the next', async 
     const responders = [];
     fetch = (url) => { requests.push(url); return new Promise(resolve => responders.push(resolve)); };
     const done = [1, 2, 3].map(id => downloads.video(`https://test.invalid/${id}.mp4`));
-    await settle();
+    await waitUntil(() => responders.length === 2);
     const initial = { requests: requests.length, queued: document.querySelectorAll('[data-state="queued"]').length };
     responders[0](response('video/mp4', 'bytes 0-2/3'));
-    await settle();
+    await waitUntil(() => responders.length === 3);
     const afterFirst = requests.length;
     responders[1](response('video/mp4', 'bytes 0-2/3'));
     responders[2](response('video/mp4', 'bytes 0-2/3'));
@@ -71,7 +71,7 @@ test('queued tasks can be cancelled without starting a request', async () => {
     fetch = url => { requests.push(url); return new Promise(resolve => responders.push(resolve)); };
     const done = [1, 2, 3].map(id => downloads.video(`https://test.invalid/${id}.mp4`));
     document.querySelector('[data-state="queued"] [data-action="cancel"]').click();
-    await settle();
+    await waitUntil(() => responders.length === 2);
     responders.forEach(resolve => resolve(response('video/mp4', 'bytes 0-2/3')));
     await Promise.all(done);
     return { requests: requests.length, saved: saved.length, cancelled: document.querySelectorAll('[data-state="cancelled"]').length, errors };
@@ -87,7 +87,7 @@ test('failed tasks expose an error and retry starts a fresh successful task', as
     await downloads.video('https://test.invalid/video');
     const error = document.querySelector('.tel-task-error').textContent;
     document.querySelector('[data-action="retry"]').click();
-    await settle();
+    await waitUntil(() => document.querySelector('.tel-task').dataset.state === 'handedOff');
     return { calls, error, saved: saved.length, state: document.querySelector('.tel-task').dataset.state };
   });
   assert.equal(result.calls, 2);
@@ -102,7 +102,7 @@ test('unknown totals show indeterminate progress and hiding the panel keeps down
     let stream;
     fetch = async () => new Response(new ReadableStream({ start(controller) { stream = controller; } }), { headers: { 'Content-Type': 'video/mp4' } });
     const done = downloads.video('https://test.invalid/video');
-    await settle();
+    await waitUntil(() => typeof stream !== 'undefined');
     stream.enqueue(new Uint8Array([1, 2, 3]));
     await settle();
     const progress = document.querySelector('.progress');
