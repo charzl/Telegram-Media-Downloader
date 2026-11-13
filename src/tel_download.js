@@ -4,7 +4,7 @@
 // @name:zh-CN   Telegram 受限图片视频下载器
 // @name:zh-TW   Telegram 受限圖片影片下載器
 // @name:ru      Telegram: загрузчик медиафайлов
-// @version      2.1
+// @version      2.1.1
 // @namespace    https://github.com/Neet-Nestor/Telegram-Media-Downloader
 // @updateURL    https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
 // @downloadURL  https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
@@ -30,6 +30,8 @@
   };
   const UI_MESSAGES = {
     en: {
+      changeLocation: "Change save location", errorFilePermission: "Allow access to the original file to resume, or choose another save location.",
+      errorDestination: "Cannot reopen the original file: {message}. Choose another save location to continue.",
       paused: "Ready to resume", resume: "Resume", resumeHint: "Saved parts survive browser restarts. If the link expired, open the original media and click Download again.",
       errorStorage: "Cannot save resume data: {message}", errorCache: "Saved download data is missing or damaged. Remove this task and start again.",
       errorBusy: "This download is active in another tab. Try again when it stops.", errorSourceChanged: "The media changed. Remove this task and start again to avoid a corrupt file.",
@@ -52,6 +54,8 @@
       errorUnexpected: "Download failed: {message}",
     },
     "zh-CN": {
+      changeLocation: "更换保存位置", errorFilePermission: "请允许访问原文件以继续下载，或选择其他保存位置。",
+      errorDestination: "无法重新打开原文件：{message}。请选择其他保存位置以继续下载。",
       paused: "可继续下载", resume: "继续下载", resumeHint: "已保存的分段可在浏览器重启后继续。链接过期时，请打开原媒体并再次点击下载。",
       errorStorage: "无法保存续传数据：{message}", errorCache: "已保存的下载数据缺失或损坏，请移除此任务后重新下载。",
       errorBusy: "另一个标签页正在处理此下载，请稍后重试。", errorSourceChanged: "媒体内容已改变，请移除此任务后重新下载，避免文件损坏。",
@@ -74,6 +78,8 @@
       errorUnexpected: "下载失败：{message}",
     },
     "zh-TW": {
+      changeLocation: "更換儲存位置", errorFilePermission: "請允許存取原檔案以繼續下載，或選擇其他儲存位置。",
+      errorDestination: "無法重新開啟原檔案：{message}。請選擇其他儲存位置以繼續下載。",
       paused: "可繼續下載", resume: "繼續下載", resumeHint: "已儲存的分段可在瀏覽器重新啟動後繼續。連結過期時，請開啟原媒體並再次點擊下載。",
       errorStorage: "無法儲存續傳資料：{message}", errorCache: "已儲存的下載資料遺失或損壞，請移除此工作後重新下載。",
       errorBusy: "另一個分頁正在處理此下載，請稍後重試。", errorSourceChanged: "媒體內容已變更，請移除此工作後重新下載，避免檔案損壞。",
@@ -96,6 +102,8 @@
       errorUnexpected: "下載失敗：{message}",
     },
     ru: {
+      changeLocation: "Изменить место сохранения", errorFilePermission: "Разрешите доступ к исходному файлу или выберите другое место сохранения.",
+      errorDestination: "Не удалось открыть исходный файл: {message}. Выберите другое место сохранения.",
       paused: "Можно продолжить", resume: "Продолжить", resumeHint: "Сохранённые части доступны после перезапуска браузера. Если ссылка устарела, откройте исходное медиа и снова нажмите «Скачать».",
       errorStorage: "Не удалось сохранить данные: {message}", errorCache: "Сохранённые данные отсутствуют или повреждены. Удалите задачу и начните заново.",
       errorBusy: "Загрузка выполняется в другой вкладке. Повторите позже.", errorSourceChanged: "Медиа изменилось. Удалите задачу и начните заново, чтобы избежать повреждения файла.",
@@ -118,6 +126,8 @@
       errorUnexpected: "Не удалось скачать: {message}",
     },
     my: {
+      changeLocation: "သိမ်းဆည်းမည့်နေရာ ပြောင်းရန်", errorFilePermission: "ဆက်လုပ်ရန် မူရင်းဖိုင်ကို ဝင်ရောက်ခွင့်ပြုပါ သို့မဟုတ် အခြားသိမ်းဆည်းမည့်နေရာကို ရွေးပါ။",
+      errorDestination: "မူရင်းဖိုင်ကို ပြန်မဖွင့်နိုင်ပါ: {message}။ အခြားသိမ်းဆည်းမည့်နေရာကို ရွေးပါ။",
       paused: "ဆက်လက်ဒေါင်းလုဒ်လုပ်နိုင်သည်", resume: "ဆက်လုပ်ရန်", resumeHint: "ဘရောက်ဇာကို ပြန်ဖွင့်ပြီးနောက် သိမ်းထားသောအပိုင်းများမှ ဆက်လုပ်နိုင်သည်။ လင့်ခ်သက်တမ်းကုန်ပါက မူရင်းမီဒီယာကိုဖွင့်ပြီး ဒေါင်းလုဒ်ကို ထပ်နှိပ်ပါ။",
       errorStorage: "ဆက်လုပ်ရန်ဒေတာကို မသိမ်းနိုင်ပါ: {message}", errorCache: "သိမ်းထားသောဒေတာ ပျောက်နေသည် သို့မဟုတ် ပျက်စီးနေသည်။ ဤလုပ်ငန်းကို ဖယ်ရှားပြီး ပြန်စပါ။",
       errorBusy: "ဤဒေါင်းလုဒ်ကို အခြားတဘ်တွင် လုပ်ဆောင်နေသည်။ နောက်မှ ထပ်စမ်းပါ။", errorSourceChanged: "မီဒီယာ ပြောင်းလဲသွားသည်။ ဖိုင်မပျက်စီးစေရန် ဤလုပ်ငန်းကို ဖယ်ရှားပြီး ပြန်စပါ။",
@@ -482,9 +492,20 @@
   const readResumeChunk = (id, offset) => resumeTransaction(["chunks"], "readonly", tx => tx.objectStore("chunks").get([id, offset]));
   const resumeRecord = task => ({
     id: task.id, key: task.key, url: task.url, kind: task.kind, fileName: task.fileName, preferredName: task.preferredName,
+    // Native handles are serializable; picker shims may return plain objects
+    // with functions, which must not break checkpoint storage.
+    fileHandle: task.fileHandle?.kind === "file" && typeof task.fileHandle.isSameEntry === "function"
+      ? task.fileHandle : undefined,
     offset: task.offset, total: task.total, mime: task.mime, validator: task.validator, updatedAt: Date.now(),
   });
   const saveResumeRecord = task => resumeTransaction(["tasks"], "readwrite", tx => tx.objectStore("tasks").put(resumeRecord(task)));
+  const refreshResumeRecord = async task => {
+    const record = await readResumeRecord(task.id);
+    if (!record || record.key !== task.key) throw downloadError("errorCache");
+    Object.assign(task, { offset: record.offset, received: record.offset, total: record.total,
+      mime: record.mime, validator: record.validator });
+    await saveResumeRecord(task);
+  };
   const saveResumePart = (task, part) => resumeTransaction(["tasks", "chunks"], "readwrite", tx => {
     tx.objectStore("chunks").put({ id: task.id, offset: task.offset, blob: part.blob });
     tx.objectStore("tasks").put({ ...resumeRecord(task), offset: part.nextOffset,
@@ -553,7 +574,7 @@
         <span class="tel-task-state" role="status" aria-live="polite"></span>
         <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div></div><p></p></div>
         <p class="tel-task-details"></p><p class="tel-task-error"></p><p class="tel-task-resume-hint"></p>
-        <div class="tel-task-actions"><button type="button" data-action="cancel"></button><button type="button" data-action="retry" hidden></button></div>`;
+        <div class="tel-task-actions"><button type="button" data-action="cancel"></button><button type="button" data-action="retry" hidden></button><button type="button" data-action="location" hidden></button></div>`;
       card.querySelector('[data-action="dismiss"]').onclick = () => dismissTask(task);
       card.querySelector('[data-action="cancel"]').onclick = async () => {
         if (task.finished || task.state === "saving") return;
@@ -572,6 +593,7 @@
         if (task.persisted) startTask(task);
         else { dismissTask(task); downloadMedia(task.url, task.kind); }
       };
+      card.querySelector('[data-action="location"]').onclick = () => startTask(task, true);
       list.prepend(card);
     }
     renderTask(task);
@@ -615,6 +637,11 @@
     const retry = card.querySelector('[data-action="retry"]');
     retry.textContent = t(task.persisted && task.offset ? "resume" : "retry");
     retry.hidden = !["paused", "failed", "cancelled"].includes(task.state);
+    const locationButton = card.querySelector('[data-action="location"]');
+    locationButton.textContent = t("changeLocation");
+    const pageWindow = typeof unsafeWindow === "undefined" ? window : unsafeWindow;
+    locationButton.hidden = !task.finished || !task.persisted || task.kind === "image" ||
+      typeof pageWindow.showSaveFilePicker !== "function";
     task.renderedAt = performance.now();
     task.renderedBytes = task.received;
     updateTaskPanel();
@@ -644,20 +671,14 @@
       checkCancelled();
       task.state = "preparing";
       renderTask(task);
-      const record = await readResumeRecord(task.id);
-      if (!record || record.key !== task.key) throw downloadError("errorCache");
-      task.offset = record.offset;
-      task.received = record.offset;
-      task.total = record.total;
-      task.mime = record.mime;
-      task.validator = record.validator;
-      await saveResumeRecord(task);
+      await refreshResumeRecord(task);
       checkCancelled();
       if (task.handle) {
         try {
           writable = await task.handle.createWritable();
         } catch (error) {
           if (error.name === "AbortError") throw error;
+          if (task.reusingDestination) throw downloadError("errorDestination", { message: error.message });
           // A denied file handle can still use the browser's download flow.
           logger.info(`Cannot open file; using browser download: ${error.message}`, task.fileName);
         }
@@ -790,11 +811,12 @@
     downloadTasks.set(task.id, task);
     return startTask(task);
   };
-  const startTask = (task) => {
+  const startTask = (task, chooseLocation = false) => {
     if (task.running) return task.promise;
     if (activeDownloads.has(task.key)) return activeDownloads.get(task.key).promise;
     Object.assign(task, {
       state: "preparing", received: task.offset, controller: new AbortController(), error: null, cancelling: false,
+      reusingDestination: false, registration: null,
       startedAt: performance.now(), renderedAt: 0, finished: false,
     });
     task.promise = new Promise(resolve => { task.resolve = resolve; });
@@ -804,22 +826,45 @@
     const enqueue = async (handle) => {
       if (task.finished) return;
       task.handle = handle;
+      task.fileHandle = handle || undefined;
       task.preferredName = handle?.name || task.preferredName;
       task.fileName = handle?.name || task.fileName;
       task.state = "queued";
       renderTask(task);
       try {
-        if (!task.persisted) {
-          task.registration = saveResumeRecord(task);
-          await task.registration;
-          task.persisted = true;
-        }
+        // Remember a newly selected destination before waiting in the queue,
+        // without replacing a newer checkpoint written by another tab.
+        task.registration = task.persisted
+          ? withResumeLock(task, () => refreshResumeRecord(task)) : saveResumeRecord(task);
+        await task.registration;
+        task.persisted = true;
         if (task.cancelling) return;
         if (task.finished) { await deleteResumeRecord(task); task.persisted = false; return; }
+        renderTask(task);
         downloadQueue.push(task);
         pumpDownloads();
       } catch (error) { finishTask(task, "failed", error); }
     };
+    if (task.persisted && task.fileHandle && !chooseLocation) {
+      task.reusingDestination = true;
+      const originalHandle = task.fileHandle;
+      const authorize = async () => {
+        const options = { mode: "readwrite" };
+        if (typeof originalHandle.queryPermission === "function" &&
+            await originalHandle.queryPermission(options) !== "granted") {
+          if (typeof originalHandle.requestPermission !== "function" ||
+              await originalHandle.requestPermission(options) !== "granted") {
+            throw downloadError("errorFilePermission");
+          }
+        }
+        await enqueue(originalHandle);
+      };
+      // Called directly by Resume's click handler so requestPermission can use
+      // the user gesture. A permission prompt does not select a new destination.
+      authorize().catch(error => finishTask(task, "paused",
+        error.translationKey ? error : downloadError("errorFilePermission")));
+      return task.promise;
+    }
     try {
       const pageWindow = typeof unsafeWindow === "undefined" ? window : unsafeWindow;
       if (task.kind !== "image" && typeof pageWindow.showSaveFilePicker === "function" &&
