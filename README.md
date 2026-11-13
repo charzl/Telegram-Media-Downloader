@@ -68,7 +68,7 @@ Downloads started by this script appear in a task panel at the bottom-right, inc
 
 ### Resume after a browser restart (this fork)
 
-Downloads save each validated response and its progress together in IndexedDB. If the browser closes unexpectedly, reopen Telegram Web in the **same browser profile and on the same domain**. Unfinished tasks reappear in the download panel; click **Resume** (or **Retry** if no part completed yet). Transfers resume manually, without automatic retries. Native save-file handles are remembered too: Resume reuses the original file, asking to renew access only when the browser requires it. **Change save location** explicitly selects another destination while keeping the same cached parts. Tasks created before version 2.1.1 have no remembered file handle and need one destination selection when first resumed.
+Downloads stream media into IndexedDB in binary blocks of at most 1 MiB. The progress checkpoint advances only after a complete response validates and all its blocks have been committed; incomplete blocks beyond that checkpoint are discarded when recovering. If the browser closes unexpectedly, reopen Telegram Web in the **same browser profile and on the same domain**. Unfinished tasks reappear in the download panel; click **Resume** (or **Retry** if no part completed yet). Transfers resume manually, without automatic retries. Native save-file handles are remembered too: Resume reuses the original file, asking to renew access only when the browser requires it. **Change save location** explicitly selects another destination while keeping the same cached parts. Tasks created before version 2.1.1 have no remembered file handle and need one destination selection when first resumed.
 
 Resume does not download completed parts from the network again. Direct file saving rebuilds the output locally from cached bytes, because an interrupted browser file writer may never have committed its temporary output. Only the missing parts and a small verification overlap are fetched. If the original file cannot be opened, the checkpoint is kept and the task offers a different save location instead of silently handing the file to another destination.
 
@@ -76,7 +76,7 @@ Only complete, validated responses count as checkpoints. Range requests ask for 
 
 Resume requires a source that still supports partial responses. A complete HTTP 200 response can be saved, but an interrupted non-range response must start again. Incomplete `blob:` URLs cannot survive a browser restart; fully cached media can still be saved without contacting the source.
 
-Cached media occupies browser storage in addition to any destination file. The script requests persistent storage, but browser approval and available disk space determine whether it can be retained. Storage failures stop the task with an error while preserving earlier committed parts. Private browsing, clearing Telegram's site data, changing profiles/domains, or browser storage eviction can remove the cache. **Cancel** and removing an inactive task discard its saved parts; hiding a running card keeps its task. Successfully saved or handed-off downloads release their cache.
+Cached media occupies browser storage in addition to any destination file. The script requests persistent storage, but browser approval and available disk space determine whether it can be retained. Storage failures stop the task with an error while preserving earlier committed parts. Private browsing, clearing Telegram's site data, changing profiles/domains, or browser storage eviction can remove the cache. **Cancel** and removing an inactive task discard its saved parts; hiding a running card keeps its task. Successfully saved or handed-off downloads release their resume cache. Browser-download exports use temporary private disk files; those files remain available to the download manager and are cleaned up on a later visit once over 24 hours old. Unfinished resume tasks are never removed by this age-based export cleanup.
 
 ### Supported Webapp Versions
 There are 2 different versions of telegram webapps:
@@ -93,7 +93,7 @@ The task panel shows the filename, received size, and download speed. When the t
 - **Resume** continues an interrupted task from its last saved response. **Retry** starts again if there are no saved bytes. If the media URL has expired, reopen the media and use its download button again.
 - **Completed** means direct file saving succeeded. **Sent to browser** means the file was handed to the browser's download manager; check that manager for the final save result.
 
-Transfers run while Telegram is open; after a browser restart, resume them manually from the restored panel. Recovery requires IndexedDB and the Web Locks API in the browser. Browsers without direct file saving collect the downloaded data before handing it to the download manager, so large downloads can use substantial browser resources. Errors are also available in the [DevTools console](https://developer.chrome.com/docs/devtools/open/).
+Transfers run while Telegram is open; after a browser restart, resume them manually from the restored panel. Recovery requires IndexedDB and the Web Locks API in the browser. Direct file output and cache writes apply backpressure instead of accumulating the full response. Without direct saving, private disk storage is used to assemble the browser download. If private disk storage is unavailable, only files up to 8 MiB use the in-memory fallback; larger files keep their checkpoint and ask for a direct save location. These bounds cover the script's working buffers, not the browser's own network, database, media-player, or filesystem caches. Errors are also available in the [DevTools console](https://developer.chrome.com/docs/devtools/open/).
 
 ### Interface Language
 
@@ -172,6 +172,8 @@ npm test
 To use an existing Chromium/Chrome installation, set `TEL_TEST_BROWSER` to its executable path instead of installing Chromium. Tests run in an isolated browser profile with simulated Telegram pages and network responses; no Telegram account is needed. The userscript itself has no npm runtime dependencies.
 
 GitHub Actions runs these checks on every push and pull request. Browser fixtures cover download behavior and known failure cases, while live `/a/` and `/k/` checks remain useful when Telegram changes its markup.
+
+To compare memory usage against version 2.1.1 on macOS/Linux, run `node scripts/benchmark-memory.cjs d62c266 256` (and set `TEL_TEST_BROWSER` if needed). It streams a synthetic 256 MiB HTTP 200 response to an isolated browser file, deliberately ignoring Range. The report samples aggregate browser-process RSS, JavaScript heap, and array-buffer backing storage. RSS includes mapped/shared pages and browser-managed buffers; results vary with browser version and garbage collection and are not a universal memory limit.
 
 ### Help with Translations
 We want Telegram Media Downloader to be accessible to users worldwide! If you’d like to help translate the script’s Greasy Fork page, follow these steps:

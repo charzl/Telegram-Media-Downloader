@@ -4,7 +4,7 @@
 // @name:zh-CN   Telegram 受限图片视频下载器
 // @name:zh-TW   Telegram 受限圖片影片下載器
 // @name:ru      Telegram: загрузчик медиафайлов
-// @version      2.1.1
+// @version      2.1.2
 // @namespace    https://github.com/Neet-Nestor/Telegram-Media-Downloader
 // @updateURL    https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
 // @downloadURL  https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
@@ -30,6 +30,7 @@
   };
   const UI_MESSAGES = {
     en: {
+      errorMemorySave: "This browser cannot save large files with low memory use. Choose a save location or use a browser with direct file saving.",
       changeLocation: "Change save location", errorFilePermission: "Allow access to the original file to resume, or choose another save location.",
       errorDestination: "Cannot reopen the original file: {message}. Choose another save location to continue.",
       paused: "Ready to resume", resume: "Resume", resumeHint: "Saved parts survive browser restarts. If the link expired, open the original media and click Download again.",
@@ -54,6 +55,7 @@
       errorUnexpected: "Download failed: {message}",
     },
     "zh-CN": {
+      errorMemorySave: "当前浏览器无法以低内存方式保存大文件。请选择保存位置，或使用支持直接保存文件的浏览器。",
       changeLocation: "更换保存位置", errorFilePermission: "请允许访问原文件以继续下载，或选择其他保存位置。",
       errorDestination: "无法重新打开原文件：{message}。请选择其他保存位置以继续下载。",
       paused: "可继续下载", resume: "继续下载", resumeHint: "已保存的分段可在浏览器重启后继续。链接过期时，请打开原媒体并再次点击下载。",
@@ -78,6 +80,7 @@
       errorUnexpected: "下载失败：{message}",
     },
     "zh-TW": {
+      errorMemorySave: "目前瀏覽器無法以低記憶體方式儲存大檔案。請選擇儲存位置，或使用支援直接儲存檔案的瀏覽器。",
       changeLocation: "更換儲存位置", errorFilePermission: "請允許存取原檔案以繼續下載，或選擇其他儲存位置。",
       errorDestination: "無法重新開啟原檔案：{message}。請選擇其他儲存位置以繼續下載。",
       paused: "可繼續下載", resume: "繼續下載", resumeHint: "已儲存的分段可在瀏覽器重新啟動後繼續。連結過期時，請開啟原媒體並再次點擊下載。",
@@ -102,6 +105,7 @@
       errorUnexpected: "下載失敗：{message}",
     },
     ru: {
+      errorMemorySave: "Браузер не может сохранять большие файлы с малым расходом памяти. Выберите место сохранения или браузер с прямой записью файлов.",
       changeLocation: "Изменить место сохранения", errorFilePermission: "Разрешите доступ к исходному файлу или выберите другое место сохранения.",
       errorDestination: "Не удалось открыть исходный файл: {message}. Выберите другое место сохранения.",
       paused: "Можно продолжить", resume: "Продолжить", resumeHint: "Сохранённые части доступны после перезапуска браузера. Если ссылка устарела, откройте исходное медиа и снова нажмите «Скачать».",
@@ -126,6 +130,7 @@
       errorUnexpected: "Не удалось скачать: {message}",
     },
     my: {
+      errorMemorySave: "ဤဘရောက်ဇာတွင် ဖိုင်ကြီးများကို မမ်မိုရီနည်းနည်းဖြင့် မသိမ်းနိုင်ပါ။ သိမ်းဆည်းမည့်နေရာ ရွေးပါ သို့မဟုတ် ဖိုင်တိုက်ရိုက်သိမ်းနိုင်သော ဘရောက်ဇာကို သုံးပါ။",
       changeLocation: "သိမ်းဆည်းမည့်နေရာ ပြောင်းရန်", errorFilePermission: "ဆက်လုပ်ရန် မူရင်းဖိုင်ကို ဝင်ရောက်ခွင့်ပြုပါ သို့မဟုတ် အခြားသိမ်းဆည်းမည့်နေရာကို ရွေးပါ။",
       errorDestination: "မူရင်းဖိုင်ကို ပြန်မဖွင့်နိုင်ပါ: {message}။ အခြားသိမ်းဆည်းမည့်နေရာကို ရွေးပါ။",
       paused: "ဆက်လက်ဒေါင်းလုဒ်လုပ်နိုင်သည်", resume: "ဆက်လုပ်ရန်", resumeHint: "ဘရောက်ဇာကို ပြန်ဖွင့်ပြီးနောက် သိမ်းထားသောအပိုင်းများမှ ဆက်လုပ်နိုင်သည်။ လင့်ခ်သက်တမ်းကုန်ပါက မူရင်းမီဒီယာကိုဖွင့်ပြီး ဒေါင်းလုဒ်ကို ထပ်နှိပ်ပါ။",
@@ -262,6 +267,8 @@
   const contentRangeRegex = /^bytes\s+(\d+)-(\d+)\/(\d+|\*)$/i;
   const REFRESH_DELAY = 2000;
   const DOWNLOAD_CHUNK_SIZE = 4 * 1024 * 1024;
+  const CACHE_BLOCK_SIZE = 1024 * 1024;
+  const MEMORY_EXPORT_LIMIT = 8 * 1024 * 1024;
   const fetchMediaPart = async (url, offset, total, kind, options = {}) => {
     const controller = new AbortController();
     const abort = () => controller.abort(options.signal.reason);
@@ -340,7 +347,20 @@
       controller.signal.addEventListener("abort", () => {
         reader.cancel().catch(() => {});
       }, { once: true });
-      const chunks = [];
+      const sample = options.sampleSize ? new Uint8Array(options.sampleSize) : null;
+      let sampled = 0;
+      const buffer = options.stage ? new Uint8Array(CACHE_BLOCK_SIZE) : null;
+      let buffered = 0;
+      let staged = 0;
+      const flush = async () => {
+        if (!buffered) return;
+        // A short typed-array view would clone its entire backing buffer into
+        // IndexedDB. Copy only the tail; full blocks can reuse the fixed buffer.
+        const bytes = buffered === buffer.byteLength ? buffer : buffer.slice(0, buffered);
+        await options.stage(offset + staged, bytes);
+        staged += buffered;
+        buffered = 0;
+      };
       let received = 0;
       options.onProgress?.(offset, totalSize ?? null);
       while (true) {
@@ -355,17 +375,34 @@
         // Wait for disk writes before reading more data, so slow disks do not
         // cause an unbounded queue of writes or large in-memory responses.
         clearTimeout(timer);
-        if (options.write) await options.write(value);
-        if (!options.write || options.retain) chunks.push(value);
+        if (options.write) for (let position = 0; position < value.byteLength; position += CACHE_BLOCK_SIZE) {
+          await options.write(value.subarray(position, position + CACHE_BLOCK_SIZE));
+        }
+        if (options.sampleSize) {
+          const size = Math.min(value.byteLength, options.sampleSize - sampled);
+          sample.set(value.subarray(0, size), sampled);
+          sampled += size;
+        } else if (options.stage) {
+          for (let position = 0; position < value.byteLength;) {
+            const size = Math.min(CACHE_BLOCK_SIZE - buffered, value.byteLength - position);
+            buffer.set(value.subarray(position, position + size), buffered);
+            buffered += size;
+            position += size;
+            if (buffered === CACHE_BLOCK_SIZE) await flush();
+          }
+        }
         checkAborted();
         resetTimeout();
         options.onProgress?.(offset + received, totalSize ?? null);
+        if (options.sampleSize && sampled >= options.sampleSize) break;
       }
-      if (!received || (expectedSize !== undefined && received !== expectedSize)) {
+      if (!received || (options.sampleSize ? sampled < options.sampleSize
+        : expectedSize !== undefined && received !== expectedSize)) {
         throw downloadError("errorIncomplete");
       }
+      if (options.stage) await flush();
       return {
-        blob: options.write && !options.retain ? null : new Blob(chunks, { type: mime }),
+        sample,
         mime, validator, totalSize: totalSize ?? received, nextOffset: offset + received,
       };
     } catch (error) {
@@ -452,8 +489,8 @@
   const MAX_CONCURRENT_DOWNLOADS = 2;
   let runningDownloads = 0;
 
-  // Checkpoints and their bytes commit in the same transaction. An interrupted
-  // response never advances the durable offset, even if some bytes reached disk.
+  // Stage fixed-size blocks on disk, then advance the checkpoint only after the
+  // full response validates. Orphaned blocks beyond that offset are disposable.
   const RESUME_DATABASE = "tel-media-downloader-resume";
   let resumeDatabase;
   const openResumeDatabase = () => {
@@ -478,10 +515,19 @@
       const db = await openResumeDatabase();
       return await new Promise((resolve, reject) => {
         const transaction = db.transaction(stores, mode, { durability: "strict" });
-        transaction.onabort = () => reject(transaction.error || new Error("Download storage transaction aborted"));
         let result;
-        transaction.oncomplete = () => resolve(result?.result);
-        try { result = work(transaction); }
+        const release = () => { result = null; transaction.onabort = null; transaction.oncomplete = null; };
+        transaction.onabort = () => {
+          const error = transaction.error || new Error("Download storage transaction aborted");
+          release();
+          reject(error);
+        };
+        transaction.oncomplete = () => {
+          const value = result?.result;
+          release();
+          resolve(value);
+        };
+        try { result = work(transaction); work = null; }
         catch (error) { transaction.abort(); reject(error); }
       });
     } catch (error) {
@@ -506,8 +552,11 @@
       mime: record.mime, validator: record.validator });
     await saveResumeRecord(task);
   };
-  const saveResumePart = (task, part) => resumeTransaction(["tasks", "chunks"], "readwrite", tx => {
-    tx.objectStore("chunks").put({ id: task.id, offset: task.offset, blob: part.blob });
+  const stageResumeChunk = (task, offset, data) => resumeTransaction(["chunks"], "readwrite", tx =>
+    tx.objectStore("chunks").put({ id: task.id, offset, data }));
+  const discardUncommittedChunks = task => resumeTransaction(["chunks"], "readwrite", tx =>
+    tx.objectStore("chunks").delete(IDBKeyRange.bound([task.id, task.offset], [task.id, Number.MAX_SAFE_INTEGER])));
+  const saveResumePart = (task, part) => resumeTransaction(["tasks"], "readwrite", tx => {
     tx.objectStore("tasks").put({ ...resumeRecord(task), offset: part.nextOffset,
       total: part.totalSize, mime: part.mime, validator: task.validator || part.validator });
   });
@@ -530,6 +579,74 @@
     return source?.id && metadata.dcId ? JSON.stringify([
       kind, metadata.dcId, source._, String(source.id), source.thumb_size || "",
     ]) : `${kind}:${url}`;
+  };
+
+  const visitCachedMedia = async (task, write) => {
+    let offset = 0;
+    let sample;
+    while (offset < task.offset) {
+      if (task.controller.signal.aborted) throw task.controller.signal.reason;
+      const chunk = await readResumeChunk(task.id, offset);
+      // Older checkpoints used Blobs. Read them without converting new binary
+      // blocks into Blob objects that the browser may keep in memory until GC.
+      const data = chunk?.data instanceof Uint8Array ? chunk.data : chunk?.blob;
+      const size = data instanceof Uint8Array ? data.byteLength : data instanceof Blob ? data.size : 0;
+      if (!size || offset + size > task.offset) {
+        throw downloadError("errorCache");
+      }
+      if (write) for (let position = 0; position < size; position += CACHE_BLOCK_SIZE) {
+        if (task.controller.signal.aborted) throw task.controller.signal.reason;
+        await write(data instanceof Uint8Array ? data.subarray(position, position + CACHE_BLOCK_SIZE)
+          : data.slice(position, position + CACHE_BLOCK_SIZE));
+      }
+      sample = data instanceof Uint8Array ? data.slice(-Math.min(1024, size))
+        : new Uint8Array(await data.slice(-Math.min(1024, size)).arrayBuffer());
+      offset += size;
+    }
+    return sample;
+  };
+  const EXPORT_DIRECTORY = "tel-media-downloader-exports";
+  const openExportDirectory = async () => {
+    const root = await navigator.storage.getDirectory();
+    return root.getDirectoryHandle(EXPORT_DIRECTORY, { create: true });
+  };
+  const cleanOldExports = async () => {
+    try {
+      const directory = await openExportDirectory();
+      for await (const [name] of directory.entries()) {
+        const timestamp = /^(\d{13})-[a-z0-9]+$/.exec(name)?.[1];
+        // Keep exports alive while the browser download manager consumes them.
+        // Unfinished resume checkpoints are separate and are never age-evicted.
+        if (timestamp && Date.now() - Number(timestamp) > 24 * 60 * 60 * 1000) await directory.removeEntry(name);
+      }
+    } catch { /* Private disk storage is optional for small-file fallback. */ }
+  };
+  const saveCachedMedia = async task => {
+    let directory;
+    try { directory = await openExportDirectory(); }
+    catch {
+      if (task.offset > MEMORY_EXPORT_LIMIT) throw downloadError("errorMemorySave");
+      const parts = [];
+      await visitCachedMedia(task, data => { parts.push(data); });
+      saveMediaBlob(new Blob(parts, { type: task.mime }), task.fileName);
+      return;
+    }
+    const name = `${Date.now()}-${task.id}`;
+    let writable;
+    try {
+      const handle = await directory.getFileHandle(name, { create: true });
+      writable = await handle.createWritable();
+      await visitCachedMedia(task, data => writable.write(data));
+      await writable.close();
+      writable = null;
+      // A file-backed Blob avoids assembling the entire media in RAM.
+      const file = await handle.getFile();
+      saveMediaBlob(file.slice(0, file.size, task.mime), task.fileName);
+    } catch (error) {
+      if (writable) try { await writable.abort(); } catch { /* Already closed. */ }
+      await directory.removeEntry(name).catch(() => {});
+      throw error;
+    }
   };
 
   const formatBytes = (bytes) => {
@@ -662,7 +779,6 @@
     if (!task.running) task.resolve?.(task.result);
   };
   const runTask = async (task) => {
-    const parts = [];
     let writable;
     const checkCancelled = () => {
       if (task.controller.signal.aborted) throw task.controller.signal.reason;
@@ -672,6 +788,7 @@
       task.state = "preparing";
       renderTask(task);
       await refreshResumeRecord(task);
+      await discardUncommittedChunks(task);
       checkCancelled();
       if (task.handle) {
         try {
@@ -686,18 +803,7 @@
       checkCancelled();
       // A writable is a temporary file until close(). Rebuild it from durable
       // chunks after a crash rather than trusting an uncommitted destination.
-      let cachedOffset = 0;
-      let lastChunk;
-      while (cachedOffset < task.offset) {
-        checkCancelled();
-        const chunk = await readResumeChunk(task.id, cachedOffset);
-        if (!(chunk?.blob instanceof Blob) || !chunk.blob.size ||
-            cachedOffset + chunk.blob.size > task.offset) throw downloadError("errorCache");
-        if (writable) await writable.write(chunk.blob);
-        else parts.push(chunk.blob);
-        lastChunk = chunk.blob;
-        cachedOffset += chunk.blob.size;
-      }
+      const sample = await visitCachedMedia(task, writable ? data => writable.write(data) : undefined);
       checkCancelled();
       task.state = "downloading";
       task.startedAt = performance.now();
@@ -706,20 +812,18 @@
       // Telegram does not always supply validators. Also compare a saved suffix
       // before appending any new bytes, including after a URL was refreshed.
       if (task.offset && task.offset < task.total) {
-        const sample = lastChunk.slice(-1024);
-        const probe = await fetchMediaPart(task.url, task.offset - sample.size, task.total, task.kind, {
+        const probe = await fetchMediaPart(task.url, task.offset - sample.byteLength, task.total, task.kind, {
           signal: task.controller.signal, end: task.offset - 1, mime: task.mime, validator: task.validator,
+          sampleSize: sample.byteLength,
         });
-        const expected = new Uint8Array(await sample.arrayBuffer());
-        const actual = new Uint8Array(await probe.blob.slice(0, sample.size).arrayBuffer());
-        if (actual.length !== expected.length || actual.some((byte, index) => byte !== expected[index])) {
+        if (probe.sample.length !== sample.length || probe.sample.some((byte, index) => byte !== sample[index])) {
           throw downloadError("errorSourceChanged");
         }
       }
       while (!task.total || task.offset < task.total) {
         const part = await fetchMediaPart(task.url, task.offset, task.total, task.kind, {
           signal: task.controller.signal,
-          retain: true, mime: task.mime, validator: task.validator,
+          stage: (offset, data) => stageResumeChunk(task, offset, data), mime: task.mime, validator: task.validator,
           write: writable ? (chunk) => writable.write(chunk) : undefined,
           onProgress: (received, size) => {
             task.received = received;
@@ -741,7 +845,6 @@
         task.total = part.totalSize;
         task.mime = part.mime;
         task.validator ||= part.validator;
-        if (!writable) parts.push(part.blob);
         task.received = task.offset;
         renderTask(task);
       }
@@ -749,7 +852,7 @@
       task.state = "saving";
       renderTask(task);
       if (writable) await writable.close();
-      else saveMediaBlob(new Blob(parts, { type: task.mime }), task.fileName);
+      else await saveCachedMedia(task);
       await deleteResumeRecord(task);
       task.persisted = false;
       finishTask(task, writable ? "completed" : "handedOff");
@@ -762,9 +865,11 @@
         try { await deleteResumeRecord(task); task.persisted = false; }
         catch (storageError) { finishTask(task, "failed", storageError); return; }
         finishTask(task, "cancelled");
-      } else finishTask(task, "failed", error);
+      } else {
+        try { await discardUncommittedChunks(task); } catch { /* Retried on resume. */ }
+        finishTask(task, "failed", error);
+      }
     } finally {
-      parts.length = 0;
       task.handle = null;
     }
   };
@@ -1317,6 +1422,7 @@
   document.body.appendChild(panel);
   refreshLanguage();
   const resumeTasksReady = restoreResumeTasks();
+  void cleanOldExports();
 
   const isWebK = location.hostname === "webk.telegram.org" || location.pathname.startsWith("/k/");
   const isWebA = location.hostname === "webz.telegram.org" || location.pathname.startsWith("/a/");

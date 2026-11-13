@@ -20,7 +20,8 @@ const inspectCache = page => page.evaluate(async () => {
   const tasks = await read('tasks');
   const chunks = await read('chunks');
   db.close();
-  return { offsets: tasks.map(task => task.offset), chunks: chunks.map(chunk => ({ offset: chunk.offset, size: chunk.blob.size })) };
+  return { offsets: tasks.map(task => task.offset), chunks: chunks.map(chunk => ({ offset: chunk.offset,
+    size: chunk.data?.byteLength ?? chunk.blob.size })) };
 });
 
 const interruptedDownload = async page => {

@@ -1,0 +1,35 @@
+{
+  "recorded_at_utc": "2026-11-13T07:28:40.114047+00:00",
+  "platform": "macOS",
+  "browser": "Google Chrome 157.0.8103.52",
+  "baseline_ref": "d62c266 (userscript 2.1.1)",
+  "optimized_script_sha256": "14d067eee92d18445adb2a9983c532ed053192ab6d43268d285c462a9fcff483",
+  "scenario": "Synthetic 256 MiB HTTP 200 body ignoring Range, streamed into a native OPFS file writer in a fresh isolated browser.",
+  "results": [
+    {
+      "label": "d62c266",
+      "payloadMiB": 256,
+      "beforeMiB": 672,
+      "peakMiB": 1542,
+      "growthMiB": 870,
+      "peakHeapMiB": 3,
+      "peakBackingMiB": 256,
+      "seconds": 5.7
+    },
+    {
+      "label": "working-tree",
+      "payloadMiB": 256,
+      "beforeMiB": 674,
+      "peakMiB": 988,
+      "growthMiB": 314,
+      "peakHeapMiB": 3,
+      "peakBackingMiB": 60,
+      "seconds": 5.5
+    }
+  ],
+  "limitations": [
+    "Sampled aggregate browser-process RSS can count shared or mapped pages more than once and varies with garbage collection.",
+    "This is a controlled whole-response case, not a universal memory limit or a measurement of a signed-in Telegram page.",
+    "Backing storage is the Chrome DevTools Runtime.getHeapUsage metric, separate from ordinary JavaScript heap."
+  ]
+}
