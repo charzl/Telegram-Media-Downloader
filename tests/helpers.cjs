@@ -4,7 +4,7 @@ const { chromium } = require('playwright-core');
 
 const source = fs.readFileSync(path.join(__dirname, '../src/tel_download.js'), 'utf8')
   .replace('logger.info("Completed script setup.");',
-    'window.downloads = { video: tel_download_video, audio: tel_download_audio, image: tel_download_image }; window.downloadI18n = { messages: UI_MESSAGES, languages: UI_LANGUAGES, translate };');
+    'window.downloads = { video: tel_download_video, audio: tel_download_audio, image: tel_download_image }; window.downloadsReady = resumeTasksReady; window.downloadI18n = { messages: UI_MESSAGES, languages: UI_LANGUAGES, translate };');
 
 exports.launch = () => chromium.launch({
   headless: true,
@@ -56,6 +56,7 @@ exports.openPage = async (browser, html = '', pathname = '/k/', options = {}) =>
   });
   if (options.beforeScript) await page.evaluate(options.beforeScript);
   await exports.installScript(page);
+  await page.evaluate(() => downloadsReady);
   return page;
 };
 
