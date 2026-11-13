@@ -14,7 +14,9 @@ test('an abruptly killed browser restores checkpoints from its profile and finis
     ...(process.env.TEL_TEST_BROWSER ? { executablePath: process.env.TEL_TEST_BROWSER } : {}),
   });
   const picker = async () => {
+    window.pickerCalls = 0;
     window.showSaveFilePicker = async () => {
+      pickerCalls++;
       const root = await navigator.storage.getDirectory();
       return root.getFileHandle('chosen.mp4', { create: true });
     };
@@ -62,10 +64,10 @@ test('an abruptly killed browser restores checkpoints from its profile and finis
     assert.deepEqual(await second.evaluate(async () => {
       const root = await navigator.storage.getDirectory();
       const handle = await root.getFileHandle('chosen.mp4');
-      return { body: await (await handle.getFile()).text(), requests, saved: saved.length, errors,
+      return { body: await (await handle.getFile()).text(), requests, saved: saved.length, errors, pickerCalls,
         displayedName: document.querySelector('.filename').textContent };
     }), { body: 'abcdefghi', requests: ['bytes=0-2', 'bytes=3-4194306', 'bytes=6-4194309'],
-      saved: 0, errors: [], displayedName: 'chosen.mp4' });
+      saved: 0, errors: [], pickerCalls: 0, displayedName: 'chosen.mp4' });
   } finally {
     await context?.close().catch(() => {});
     await fs.rm(profile, { recursive: true, force: true });
