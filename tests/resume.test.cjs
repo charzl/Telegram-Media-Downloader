@@ -20,7 +20,8 @@ const inspectCache = page => page.evaluate(async () => {
   const tasks = await read('tasks');
   const chunks = await read('chunks');
   db.close();
-  return { offsets: tasks.map(task => task.offset), chunks: chunks.map(chunk => ({ offset: chunk.offset, size: chunk.blob.size })) };
+  return { offsets: tasks.map(task => task.offset), chunks: chunks.map(chunk => ({ offset: chunk.offset,
+    size: chunk.data?.byteLength ?? chunk.blob.size })) };
 });
 
 const interruptedDownload = async page => {
@@ -49,7 +50,9 @@ const finishResumedDownload = async page => {
     };
     document.querySelector('[data-action="retry"]').click();
   });
-  await page.waitForFunction(() => document.querySelector('.tel-task').dataset.state === 'handedOff');
+  await page.waitForFunction(() => ['handedOff', 'failed'].includes(document.querySelector('.tel-task').dataset.state));
+  assert.equal(await page.locator('.tel-task').getAttribute('data-state'), 'handedOff',
+    await page.locator('.tel-task-error').textContent());
 };
 
 test('a new page restores only committed chunks and resumes without duplicating a partial response', async () => {
@@ -115,7 +118,9 @@ test('another tab cannot resume or delete an active download', async () => {
   await second.locator('[data-action="retry"]').click();
   await second.waitForFunction(() => document.querySelector('.tel-task').dataset.state === 'failed');
   assert.match(await second.locator('.tel-task-error').textContent(), /another tab/);
-  await second.locator('[data-action="dismiss"]').click();
+  // Await the asynchronous handler, not just dispatching its click. Otherwise
+  // the first tab could close before the delete attempt checks its lock.
+  await second.evaluate(() => document.querySelector('[data-action="dismiss"]').onclick());
   assert.equal(await second.locator('.tel-task').count(), 1);
   assert.deepEqual(await inspectCache(first), { offsets: [3], chunks: [{ offset: 0, size: 3 }] });
   assert.deepEqual(await second.evaluate(() => requests), []);
@@ -127,6 +132,31 @@ test('another tab cannot resume or delete an active download', async () => {
     return !held.some(lock => lock.name.startsWith('tel-media-download:'));
   });
   await finishResumedDownload(second);
+  assert.equal(await second.evaluate(() => blobs[0].text()), 'abcdefghi');
+});
+
+test('resuming waits for a short lock handover instead of rejecting the new owner', async () => {
+  context = await browser.newContext();
+  const first = await openPage(browser, '', '/k/', { context });
+  await interruptedDownload(first);
+  await first.close();
+  const second = await openPage(browser, '', '/k/', { context });
+  await second.evaluate(() => {
+    const id = document.querySelector('.tel-task').id.replace('tel-downloader-progress-', '');
+    window.handover = navigator.locks.request('tel-media-download:' + id, () => new Promise(resolve => {
+      window.releaseHandover = resolve;
+    }));
+  });
+  await second.waitForFunction(() => typeof releaseHandover === 'function');
+  const done = finishResumedDownload(second);
+  // Attach a rejection handler immediately while coordinating the lock owner.
+  done.catch(() => {});
+  await second.waitForFunction(async () => {
+    const { pending } = await navigator.locks.query();
+    return pending.some(lock => lock.name.startsWith('tel-media-download:'));
+  });
+  await second.evaluate(() => releaseHandover());
+  await done;
   assert.equal(await second.evaluate(() => blobs[0].text()), 'abcdefghi');
 });
 
