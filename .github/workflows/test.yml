@@ -14,7 +14,8 @@ concurrency:
 
 jobs:
   browser-tests:
-    runs-on: ubuntu-latest
+    # Playwright 1.58 supports Ubuntu 24.04; ubuntu-latest may select a newer OS.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
