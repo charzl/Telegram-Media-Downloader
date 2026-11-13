@@ -120,6 +120,12 @@ test('another tab cannot resume or delete an active download', async () => {
   assert.deepEqual(await inspectCache(first), { offsets: [3], chunks: [{ offset: 0, size: 3 }] });
   assert.deepEqual(await second.evaluate(() => requests), []);
   await first.close();
+  // Closing a page and the browser process releasing its locks are separate
+  // events. Wait for the latter before simulating the next user attempt.
+  await second.waitForFunction(async () => {
+    const { held } = await navigator.locks.query();
+    return !held.some(lock => lock.name.startsWith('tel-media-download:'));
+  });
   await finishResumedDownload(second);
   assert.equal(await second.evaluate(() => blobs[0].text()), 'abcdefghi');
 });
