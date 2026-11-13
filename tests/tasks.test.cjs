@@ -79,18 +79,19 @@ test('queued tasks can be cancelled without starting a request', async () => {
   assert.deepEqual(result, { requests: 2, saved: 2, cancelled: 1, errors: [] });
 });
 
-test('failed tasks expose an error and retry starts a fresh successful task', async () => {
+test('exhausted automatic retries expose an error and manual retry can succeed', async () => {
   page = await openPage(browser);
   const result = await page.evaluate(async () => {
-    let calls = 0;
-    fetch = async () => ++calls === 1 ? response('video/mp4', null, 'error', 500) : response('video/mp4', 'bytes 0-2/3');
+    let calls = 0, recover = false;
+    fetch = async () => { calls++; return recover ? response('video/mp4', 'bytes 0-2/3') : response('video/mp4', null, 'error', 500); };
     await downloads.video('https://test.invalid/video');
     const error = document.querySelector('.tel-task-error').textContent;
+    recover = true;
     document.querySelector('[data-action="retry"]').click();
     await waitUntil(() => document.querySelector('.tel-task').dataset.state === 'handedOff');
     return { calls, error, saved: saved.length, state: document.querySelector('.tel-task').dataset.state };
   });
-  assert.equal(result.calls, 2);
+  assert.equal(result.calls, 5);
   assert.match(result.error, /HTTP 500/);
   assert.equal(result.saved, 1);
   assert.equal(result.state, 'handedOff');

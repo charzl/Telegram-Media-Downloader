@@ -88,8 +88,9 @@ test('dismissing progress does not cancel a download or break error handling', a
   for (const fail of [false, true]) {
     page = await openPage(browser);
     const result = await page.evaluate(async fail => {
-      let respond;
-      fetch = () => new Promise(resolve => { respond = resolve; });
+      let respond, calls = 0;
+      fetch = () => ++calls === 1 ? new Promise(resolve => { respond = resolve; })
+        : Promise.resolve(response('video/mp4', null, 'error', 500));
       const done = downloads.video('https://test.invalid/video');
       document.querySelector('[data-action="dismiss"]').click();
       await waitUntil(() => typeof respond === 'function');

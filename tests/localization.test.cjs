@@ -234,7 +234,7 @@ test('localized validation and browser errors preserve useful diagnostics as tex
     fetch = async () => { throw new Error('<img src=x onerror=alert(1)>'); };
     await downloads.video('https://test.invalid/network-error');
   });
-  assert.equal(await page.locator('.tel-task-error').first().textContent(), '下载失败：<img src=x onerror=alert(1)>');
+  assert.equal(await page.locator('.tel-task-error').first().textContent(), '网络请求失败：<img src=x onerror=alert(1)>');
   assert.equal(await page.locator(`${panel} img`).count(), 0);
 });
 
