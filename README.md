@@ -66,6 +66,16 @@ For channels and chats that disable downloading and restrict saving content, thi
 
 Downloads started by this script appear in a task panel at the bottom-right, including videos, images, and audio. Telegram's own download controls continue to use Telegram's interface.
 
+### Resume after a browser restart (this fork)
+
+Downloads save each validated response and its progress together in IndexedDB. If the browser closes unexpectedly, reopen Telegram Web in the **same browser profile and on the same domain**. Unfinished tasks reappear in the download panel; click **Resume** (or **Retry** if no part completed yet). Transfers resume manually, without automatic retries. When a save picker is available, choose the destination again; already cached bytes are copied locally before the remaining parts are fetched.
+
+Only complete, validated responses count as checkpoints. Range requests ask for 4 MiB at a time, so an interrupted response is downloaded again. A small overlap check and any available HTTP validators guard against appending bytes from a changed source. If a Telegram link expires, open the original media and click its download button again: URLs carrying the same Telegram document identity reconnect to the saved task. Matching by filename alone is deliberately avoided.
+
+Resume requires a source that still supports partial responses. A complete HTTP 200 response can be saved, but an interrupted non-range response must start again. Incomplete `blob:` URLs cannot survive a browser restart; fully cached media can still be saved without contacting the source.
+
+Cached media occupies browser storage in addition to any destination file. The script requests persistent storage, but browser approval and available disk space determine whether it can be retained. Storage failures stop the task with an error while preserving earlier committed parts. Private browsing, clearing Telegram's site data, changing profiles/domains, or browser storage eviction can remove the cache. **Cancel** and removing an inactive task discard its saved parts; hiding a running card keeps its task. Successfully saved or handed-off downloads release their cache.
+
 ### Supported Webapp Versions
 There are 2 different versions of telegram webapps:
 - https://webk.telegram.org / https://web.telegram.org/k/ (**Recommended**)
@@ -76,12 +86,12 @@ This script should work on both versions of webapp, but some features are only a
 ### Check Downloading Progress
 The task panel shows the filename, received size, and download speed. When the total size is known, it also shows a percentage. Up to two files download at once; additional files wait in the queue. Clicking the same media again focuses its active task.
 
-- **Hide** collapses the panel. **×** dismisses one task card. Both leave downloads running.
-- **Cancel** stops a queued or active download and discards unfinished file writes. Cancellation is disabled while the completed file is being committed.
-- **Retry** restarts a failed or cancelled download from the beginning. If the media URL has expired, reopen the media and use its download button again.
+- **Hide** collapses the panel. **×** hides a running task card without stopping it; removing an inactive task also deletes its saved parts.
+- **Cancel** stops a queued or active download and discards both unfinished file writes and saved parts. Cancellation is disabled while the completed file is being committed.
+- **Resume** continues an interrupted task from its last saved response. **Retry** starts again if there are no saved bytes. If the media URL has expired, reopen the media and use its download button again.
 - **Completed** means direct file saving succeeded. **Sent to browser** means the file was handed to the browser's download manager; check that manager for the final save result.
 
-Keep the Telegram tab open until the transfer finishes. Browsers without direct file saving collect the downloaded data before handing it to the download manager, so large downloads can use substantial browser resources. Errors are also available in the [DevTools console](https://developer.chrome.com/docs/devtools/open/).
+Transfers run while Telegram is open; after a browser restart, resume them manually from the restored panel. Recovery requires IndexedDB and the Web Locks API in the browser. Browsers without direct file saving collect the downloaded data before handing it to the download manager, so large downloads can use substantial browser resources. Errors are also available in the [DevTools console](https://developer.chrome.com/docs/devtools/open/).
 
 ### Interface Language
 

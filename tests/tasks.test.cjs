@@ -16,6 +16,7 @@ test('duplicate clicks share one download and can restore a dismissed card', asy
     document.querySelector('[data-action="dismiss"]').click();
     const second = downloads.video('https://test.invalid/video');
     const cards = document.querySelectorAll('.tel-task').length;
+    await settle();
     respond(response('video/mp4', 'bytes 0-2/3'));
     await first;
     return { same: first === second, calls, cards, saved: saved.length, errors };
@@ -50,6 +51,7 @@ test('only two downloads run at once and completing one starts the next', async 
     const responders = [];
     fetch = (url) => { requests.push(url); return new Promise(resolve => responders.push(resolve)); };
     const done = [1, 2, 3].map(id => downloads.video(`https://test.invalid/${id}.mp4`));
+    await settle();
     const initial = { requests: requests.length, queued: document.querySelectorAll('[data-state="queued"]').length };
     responders[0](response('video/mp4', 'bytes 0-2/3'));
     await settle();
@@ -69,6 +71,7 @@ test('queued tasks can be cancelled without starting a request', async () => {
     fetch = url => { requests.push(url); return new Promise(resolve => responders.push(resolve)); };
     const done = [1, 2, 3].map(id => downloads.video(`https://test.invalid/${id}.mp4`));
     document.querySelector('[data-state="queued"] [data-action="cancel"]').click();
+    await settle();
     responders.forEach(resolve => resolve(response('video/mp4', 'bytes 0-2/3')));
     await Promise.all(done);
     return { requests: requests.length, saved: saved.length, cancelled: document.querySelectorAll('[data-state="cancelled"]').length, errors };

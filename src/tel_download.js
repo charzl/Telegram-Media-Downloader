@@ -4,7 +4,7 @@
 // @name:zh-CN   Telegram 受限图片视频下载器
 // @name:zh-TW   Telegram 受限圖片影片下載器
 // @name:ru      Telegram: загрузчик медиафайлов
-// @version      2.0
+// @version      2.1
 // @namespace    https://github.com/Neet-Nestor/Telegram-Media-Downloader
 // @updateURL    https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
 // @downloadURL  https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
@@ -30,6 +30,9 @@
   };
   const UI_MESSAGES = {
     en: {
+      paused: "Ready to resume", resume: "Resume", resumeHint: "Saved parts survive browser restarts. If the link expired, open the original media and click Download again.",
+      errorStorage: "Cannot save resume data: {message}", errorCache: "Saved download data is missing or damaged. Remove this task and start again.",
+      errorBusy: "This download is active in another tab. Try again when it stops.", errorSourceChanged: "The media changed. Remove this task and start again to avoid a corrupt file.",
       downloads: "Downloads", downloadsCount: "Downloads ({count})", mediaDownloads: "Media downloads",
       download: "Download", loadingMedia: "Media is loading", hide: "Hide", show: "Show",
       dismiss: "Dismiss download", progress: "Download progress", cancel: "Cancel", retry: "Retry",
@@ -49,6 +52,9 @@
       errorUnexpected: "Download failed: {message}",
     },
     "zh-CN": {
+      paused: "可继续下载", resume: "继续下载", resumeHint: "已保存的分段可在浏览器重启后继续。链接过期时，请打开原媒体并再次点击下载。",
+      errorStorage: "无法保存续传数据：{message}", errorCache: "已保存的下载数据缺失或损坏，请移除此任务后重新下载。",
+      errorBusy: "另一个标签页正在处理此下载，请稍后重试。", errorSourceChanged: "媒体内容已改变，请移除此任务后重新下载，避免文件损坏。",
       downloads: "下载", downloadsCount: "下载（{count}）", mediaDownloads: "媒体下载",
       download: "下载", loadingMedia: "媒体正在加载", hide: "收起", show: "展开",
       dismiss: "移除下载卡片", progress: "下载进度", cancel: "取消", retry: "重试",
@@ -68,6 +74,9 @@
       errorUnexpected: "下载失败：{message}",
     },
     "zh-TW": {
+      paused: "可繼續下載", resume: "繼續下載", resumeHint: "已儲存的分段可在瀏覽器重新啟動後繼續。連結過期時，請開啟原媒體並再次點擊下載。",
+      errorStorage: "無法儲存續傳資料：{message}", errorCache: "已儲存的下載資料遺失或損壞，請移除此工作後重新下載。",
+      errorBusy: "另一個分頁正在處理此下載，請稍後重試。", errorSourceChanged: "媒體內容已變更，請移除此工作後重新下載，避免檔案損壞。",
       downloads: "下載", downloadsCount: "下載（{count}）", mediaDownloads: "媒體下載",
       download: "下載", loadingMedia: "媒體正在載入", hide: "收合", show: "展開",
       dismiss: "移除下載卡片", progress: "下載進度", cancel: "取消", retry: "重試",
@@ -87,6 +96,9 @@
       errorUnexpected: "下載失敗：{message}",
     },
     ru: {
+      paused: "Можно продолжить", resume: "Продолжить", resumeHint: "Сохранённые части доступны после перезапуска браузера. Если ссылка устарела, откройте исходное медиа и снова нажмите «Скачать».",
+      errorStorage: "Не удалось сохранить данные: {message}", errorCache: "Сохранённые данные отсутствуют или повреждены. Удалите задачу и начните заново.",
+      errorBusy: "Загрузка выполняется в другой вкладке. Повторите позже.", errorSourceChanged: "Медиа изменилось. Удалите задачу и начните заново, чтобы избежать повреждения файла.",
       downloads: "Загрузки", downloadsCount: "Загрузки ({count})", mediaDownloads: "Загрузка медиа",
       download: "Скачать", loadingMedia: "Медиа загружается", hide: "Свернуть", show: "Развернуть",
       dismiss: "Убрать карточку загрузки", progress: "Ход загрузки", cancel: "Отменить", retry: "Повторить",
@@ -106,6 +118,9 @@
       errorUnexpected: "Не удалось скачать: {message}",
     },
     my: {
+      paused: "ဆက်လက်ဒေါင်းလုဒ်လုပ်နိုင်သည်", resume: "ဆက်လုပ်ရန်", resumeHint: "ဘရောက်ဇာကို ပြန်ဖွင့်ပြီးနောက် သိမ်းထားသောအပိုင်းများမှ ဆက်လုပ်နိုင်သည်။ လင့်ခ်သက်တမ်းကုန်ပါက မူရင်းမီဒီယာကိုဖွင့်ပြီး ဒေါင်းလုဒ်ကို ထပ်နှိပ်ပါ။",
+      errorStorage: "ဆက်လုပ်ရန်ဒေတာကို မသိမ်းနိုင်ပါ: {message}", errorCache: "သိမ်းထားသောဒေတာ ပျောက်နေသည် သို့မဟုတ် ပျက်စီးနေသည်။ ဤလုပ်ငန်းကို ဖယ်ရှားပြီး ပြန်စပါ။",
+      errorBusy: "ဤဒေါင်းလုဒ်ကို အခြားတဘ်တွင် လုပ်ဆောင်နေသည်။ နောက်မှ ထပ်စမ်းပါ။", errorSourceChanged: "မီဒီယာ ပြောင်းလဲသွားသည်။ ဖိုင်မပျက်စီးစေရန် ဤလုပ်ငန်းကို ဖယ်ရှားပြီး ပြန်စပါ။",
       downloads: "ဒေါင်းလုဒ်များ", downloadsCount: "ဒေါင်းလုဒ်များ ({count})", mediaDownloads: "မီဒီယာဒေါင်းလုဒ်များ",
       download: "ဒေါင်းလုဒ်လုပ်ရန်", loadingMedia: "မီဒီယာကို ဖွင့်နေသည်", hide: "ဖျောက်ရန်", show: "ပြရန်",
       dismiss: "ဒေါင်းလုဒ်ကတ်ကို ဖယ်ရှားရန်", progress: "ဒေါင်းလုဒ်တိုးတက်မှု", cancel: "ပယ်ဖျက်ရန်", retry: "ထပ်စမ်းရန်",
@@ -257,7 +272,10 @@
     try {
       checkAborted();
       const res = await fetch(url, {
-        headers: url.startsWith("blob:") ? {} : { Range: `bytes=${offset}-${offset + DOWNLOAD_CHUNK_SIZE - 1}` },
+        headers: url.startsWith("blob:") ? {} : {
+          Range: `bytes=${offset}-${options.end ?? offset + DOWNLOAD_CHUNK_SIZE - 1}`,
+          ...(options.validator ? { "If-Range": options.validator.value } : {}),
+        },
         signal: controller.signal,
       });
       if (res.status !== 200 && res.status !== 206) {
@@ -265,12 +283,21 @@
       }
       let mime = res.headers.get("Content-Type")?.split(";")[0].trim().toLowerCase();
       if (kind !== "image" && (!mime || mime === "application/octet-stream")) {
-        const metadataMime = getMediaMetadata(url)?.mimeType;
-        mime = typeof metadataMime === "string" && metadataMime.startsWith(`${kind}/`)
-          ? metadataMime.toLowerCase() : kind === "video" ? "video/mp4" : "audio/ogg";
+        const metadataMime = getMediaMetadata(url)?.mimeType?.toLowerCase?.();
+        mime = metadataMime?.startsWith(`${kind}/`) ? metadataMime
+          : options.mime || (kind === "video" ? "video/mp4" : "audio/ogg");
       }
       if (!mime?.startsWith(`${kind}/`)) {
         throw downloadError("errorMime", { kind, mime });
+      }
+      if (options.mime && options.mime !== mime) throw downloadError("errorSourceChanged");
+      const etag = res.headers.get("ETag");
+      const modified = res.headers.get("Last-Modified");
+      const validator = etag && !etag.startsWith("W/") ? { header: "ETag", value: etag }
+        : modified ? { header: "Last-Modified", value: modified } : null;
+      if (options.validator && res.headers.get(options.validator.header) !== null &&
+          res.headers.get(options.validator.header) !== options.validator.value) {
+        throw downloadError("errorSourceChanged");
       }
       let expectedSize;
       let totalSize;
@@ -319,7 +346,7 @@
         // cause an unbounded queue of writes or large in-memory responses.
         clearTimeout(timer);
         if (options.write) await options.write(value);
-        else chunks.push(value);
+        if (!options.write || options.retain) chunks.push(value);
         checkAborted();
         resetTimeout();
         options.onProgress?.(offset + received, totalSize ?? null);
@@ -328,8 +355,8 @@
         throw downloadError("errorIncomplete");
       }
       return {
-        blob: options.write ? null : new Blob(chunks, { type: mime }),
-        mime, totalSize: totalSize ?? received, nextOffset: offset + received,
+        blob: options.write && !options.retain ? null : new Blob(chunks, { type: mime }),
+        mime, validator, totalSize: totalSize ?? received, nextOffset: offset + received,
       };
     } catch (error) {
       controller.abort(error);
@@ -415,6 +442,75 @@
   const MAX_CONCURRENT_DOWNLOADS = 2;
   let runningDownloads = 0;
 
+  // Checkpoints and their bytes commit in the same transaction. An interrupted
+  // response never advances the durable offset, even if some bytes reached disk.
+  const RESUME_DATABASE = "tel-media-downloader-resume";
+  let resumeDatabase;
+  const openResumeDatabase = () => {
+    if (!resumeDatabase) resumeDatabase = new Promise((resolve, reject) => {
+      const request = indexedDB.open(RESUME_DATABASE, 1);
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore("tasks", { keyPath: "id" });
+        request.result.createObjectStore("chunks", { keyPath: ["id", "offset"] });
+      };
+      request.onerror = () => reject(request.error);
+      request.onblocked = () => reject(new Error("Download storage is blocked by another tab"));
+      request.onsuccess = () => {
+        const db = request.result;
+        db.onversionchange = () => { db.close(); resumeDatabase = null; };
+        resolve(db);
+      };
+    }).catch(error => { resumeDatabase = null; throw error; });
+    return resumeDatabase;
+  };
+  const resumeTransaction = async (stores, mode, work) => {
+    try {
+      const db = await openResumeDatabase();
+      return await new Promise((resolve, reject) => {
+        const transaction = db.transaction(stores, mode, { durability: "strict" });
+        transaction.onabort = () => reject(transaction.error || new Error("Download storage transaction aborted"));
+        let result;
+        transaction.oncomplete = () => resolve(result?.result);
+        try { result = work(transaction); }
+        catch (error) { transaction.abort(); reject(error); }
+      });
+    } catch (error) {
+      throw downloadError("errorStorage", { message: error.message });
+    }
+  };
+  const readResumeRecord = (id) => resumeTransaction(["tasks"], "readonly", tx => tx.objectStore("tasks").get(id));
+  const readResumeChunk = (id, offset) => resumeTransaction(["chunks"], "readonly", tx => tx.objectStore("chunks").get([id, offset]));
+  const resumeRecord = task => ({
+    id: task.id, key: task.key, url: task.url, kind: task.kind, fileName: task.fileName, preferredName: task.preferredName,
+    offset: task.offset, total: task.total, mime: task.mime, validator: task.validator, updatedAt: Date.now(),
+  });
+  const saveResumeRecord = task => resumeTransaction(["tasks"], "readwrite", tx => tx.objectStore("tasks").put(resumeRecord(task)));
+  const saveResumePart = (task, part) => resumeTransaction(["tasks", "chunks"], "readwrite", tx => {
+    tx.objectStore("chunks").put({ id: task.id, offset: task.offset, blob: part.blob });
+    tx.objectStore("tasks").put({ ...resumeRecord(task), offset: part.nextOffset,
+      total: part.totalSize, mime: part.mime, validator: task.validator || part.validator });
+  });
+  const deleteResumeRecord = task => resumeTransaction(["tasks", "chunks"], "readwrite", tx => {
+    tx.objectStore("tasks").delete(task.id);
+    tx.objectStore("chunks").delete(IDBKeyRange.bound([task.id, 0], [task.id, Number.MAX_SAFE_INTEGER]));
+  });
+  const withResumeLock = async (task, work) => {
+    if (!navigator.locks) throw downloadError("errorStorage", { message: "Web Locks are unavailable in this browser" });
+    return navigator.locks.request(`tel-media-download:${task.id}`, { ifAvailable: true }, lock => {
+      if (!lock) throw downloadError("errorBusy");
+      return work();
+    });
+  };
+  const getDownloadKey = (url, kind) => {
+    const metadata = getMediaMetadata(url);
+    const source = metadata?.location;
+    // file_reference may expire; the immutable Telegram document ID lets a fresh
+    // URL reconnect to its task without matching unrelated media by filename.
+    return source?.id && metadata.dcId ? JSON.stringify([
+      kind, metadata.dcId, source._, String(source.id), source.thumb_size || "",
+    ]) : `${kind}:${url}`;
+  };
+
   const formatBytes = (bytes) => {
     const units = ["B", "KB", "MB", "GB", "TB"];
     const index = Math.min(Math.floor(Math.log(Math.max(bytes, 1)) / Math.log(1024)), units.length - 1);
@@ -428,7 +524,13 @@
     panel.querySelector(".tel-panel-title").textContent = activeDownloads.size
       ? t("downloadsCount", { count: integerFormat.format(activeDownloads.size) }) : t("downloads");
   };
-  const dismissTask = (task) => {
+  const dismissTask = async (task) => {
+    if (task.finished && task.persisted) {
+      try {
+        await withResumeLock(task, () => deleteResumeRecord(task));
+        task.persisted = false;
+      } catch (error) { task.error = error; renderTask(task); return; }
+    }
     document.getElementById("tel-downloader-progress-" + task.id)?.remove();
     if (task.finished) downloadTasks.delete(task.id);
     updateTaskPanel();
@@ -450,17 +552,25 @@
         <div class="tel-task-heading"><p class="filename" dir="auto"></p><button type="button" data-action="dismiss">&times;</button></div>
         <span class="tel-task-state" role="status" aria-live="polite"></span>
         <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div></div><p></p></div>
-        <p class="tel-task-details"></p><p class="tel-task-error"></p>
+        <p class="tel-task-details"></p><p class="tel-task-error"></p><p class="tel-task-resume-hint"></p>
         <div class="tel-task-actions"><button type="button" data-action="cancel"></button><button type="button" data-action="retry" hidden></button></div>`;
       card.querySelector('[data-action="dismiss"]').onclick = () => dismissTask(task);
-      card.querySelector('[data-action="cancel"]').onclick = () => {
+      card.querySelector('[data-action="cancel"]').onclick = async () => {
         if (task.finished || task.state === "saving") return;
         task.controller.abort(new DOMException("Download cancelled", "AbortError"));
-        if (!task.running) finishTask(task, "cancelled");
+        if (!task.running) {
+          task.cancelling = true;
+          try {
+            await task.registration;
+            if (task.persisted) await withResumeLock(task, () => deleteResumeRecord(task));
+            task.persisted = false;
+            finishTask(task, "cancelled");
+          } catch (error) { finishTask(task, "failed", error); }
+        }
       };
       card.querySelector('[data-action="retry"]').onclick = () => {
-        dismissTask(task);
-        downloadMedia(task.url, task.kind);
+        if (task.persisted) startTask(task);
+        else { dismissTask(task); downloadMedia(task.url, task.kind); }
       };
       list.prepend(card);
     }
@@ -487,20 +597,24 @@
     progress.setAttribute("aria-valuetext", label);
     progress.querySelector("div").style.width = (percent ?? 0) + "%";
     progress.querySelector("p").textContent = task.state === "downloading" && percent !== null ? `${integerFormat.format(percent)}%` : label;
-    const speed = task.received / Math.max((performance.now() - task.startedAt) / 1000, 0.1);
+    const speed = Math.max(0, task.received - (task.startedOffset || 0)) /
+      Math.max((performance.now() - task.startedAt) / 1000, 0.1);
     card.querySelector(".tel-task-details").textContent =
       formatBytes(task.received) + (task.total !== null ? ` / ${formatBytes(task.total)}` : "") +
       (task.state === "downloading" && task.received ? ` · ${t("rate", { speed: formatBytes(speed) })}` : "");
     const error = card.querySelector(".tel-task-error");
     error.textContent = formatDownloadError(task.error);
     error.hidden = !task.error;
+    const hint = card.querySelector(".tel-task-resume-hint");
+    hint.textContent = t("resumeHint");
+    hint.hidden = !task.persisted || !["paused", "failed"].includes(task.state);
     const cancel = card.querySelector('[data-action="cancel"]');
     cancel.textContent = t("cancel");
     cancel.hidden = task.finished;
     cancel.disabled = task.state === "saving";
     const retry = card.querySelector('[data-action="retry"]');
-    retry.textContent = t("retry");
-    retry.hidden = !["failed", "cancelled"].includes(task.state);
+    retry.textContent = t(task.persisted && task.offset ? "resume" : "retry");
+    retry.hidden = !["paused", "failed", "cancelled"].includes(task.state);
     task.renderedAt = performance.now();
     task.renderedBytes = task.received;
     updateTaskPanel();
@@ -509,14 +623,16 @@
     if (task.finished) return;
     task.finished = true;
     clearTimeout(task.progressTimer);
+    task.progressTimer = null;
     task.state = state;
     task.error = error;
     if (activeDownloads.get(task.key) === task) activeDownloads.delete(task.key);
     if (error) logger.error(error, task.fileName);
     renderTask(task);
-    if (!document.getElementById("tel-downloader-progress-" + task.id)) downloadTasks.delete(task.id);
+    if (!task.persisted && !document.getElementById("tel-downloader-progress-" + task.id)) downloadTasks.delete(task.id);
     updateTaskPanel();
-    task.resolve({ state, fileName: task.fileName, received: task.received });
+    task.result = { state, fileName: task.fileName, received: task.received };
+    if (!task.running) task.resolve?.(task.result);
   };
   const runTask = async (task) => {
     const parts = [];
@@ -528,6 +644,15 @@
       checkCancelled();
       task.state = "preparing";
       renderTask(task);
+      const record = await readResumeRecord(task.id);
+      if (!record || record.key !== task.key) throw downloadError("errorCache");
+      task.offset = record.offset;
+      task.received = record.offset;
+      task.total = record.total;
+      task.mime = record.mime;
+      task.validator = record.validator;
+      await saveResumeRecord(task);
+      checkCancelled();
       if (task.handle) {
         try {
           writable = await task.handle.createWritable();
@@ -538,15 +663,42 @@
         }
       }
       checkCancelled();
+      // A writable is a temporary file until close(). Rebuild it from durable
+      // chunks after a crash rather than trusting an uncommitted destination.
+      let cachedOffset = 0;
+      let lastChunk;
+      while (cachedOffset < task.offset) {
+        checkCancelled();
+        const chunk = await readResumeChunk(task.id, cachedOffset);
+        if (!(chunk?.blob instanceof Blob) || !chunk.blob.size ||
+            cachedOffset + chunk.blob.size > task.offset) throw downloadError("errorCache");
+        if (writable) await writable.write(chunk.blob);
+        else parts.push(chunk.blob);
+        lastChunk = chunk.blob;
+        cachedOffset += chunk.blob.size;
+      }
+      checkCancelled();
       task.state = "downloading";
       task.startedAt = performance.now();
+      task.startedOffset = task.offset;
       renderTask(task);
-      let offset = 0;
-      let total = null;
-      let mime;
-      do {
-        const part = await fetchMediaPart(task.url, offset, total, task.kind, {
+      // Telegram does not always supply validators. Also compare a saved suffix
+      // before appending any new bytes, including after a URL was refreshed.
+      if (task.offset && task.offset < task.total) {
+        const sample = lastChunk.slice(-1024);
+        const probe = await fetchMediaPart(task.url, task.offset - sample.size, task.total, task.kind, {
+          signal: task.controller.signal, end: task.offset - 1, mime: task.mime, validator: task.validator,
+        });
+        const expected = new Uint8Array(await sample.arrayBuffer());
+        const actual = new Uint8Array(await probe.blob.slice(0, sample.size).arrayBuffer());
+        if (actual.length !== expected.length || actual.some((byte, index) => byte !== expected[index])) {
+          throw downloadError("errorSourceChanged");
+        }
+      }
+      while (!task.total || task.offset < task.total) {
+        const part = await fetchMediaPart(task.url, task.offset, task.total, task.kind, {
           signal: task.controller.signal,
+          retain: true, mime: task.mime, validator: task.validator,
           write: writable ? (chunk) => writable.write(chunk) : undefined,
           onProgress: (received, size) => {
             task.received = received;
@@ -562,27 +714,34 @@
           },
         });
         checkCancelled();
+        task.fileName = task.preferredName || getDownloadFileName(task.url, part.mime, task.kind);
+        await saveResumePart(task, part);
+        task.offset = part.nextOffset;
+        task.total = part.totalSize;
+        task.mime = part.mime;
+        task.validator ||= part.validator;
         if (!writable) parts.push(part.blob);
-        offset = part.nextOffset;
-        total = part.totalSize;
-        mime = part.mime;
-        task.fileName = task.handle?.name || getDownloadFileName(task.url, mime, task.kind);
-        task.received = offset;
-        task.total = total;
+        task.received = task.offset;
         renderTask(task);
-      } while (offset < total);
+      }
       checkCancelled();
       task.state = "saving";
       renderTask(task);
       if (writable) await writable.close();
-      else saveMediaBlob(new Blob(parts, { type: mime }), task.fileName);
+      else saveMediaBlob(new Blob(parts, { type: task.mime }), task.fileName);
+      await deleteResumeRecord(task);
+      task.persisted = false;
       finishTask(task, writable ? "completed" : "handedOff");
     } catch (error) {
       if (writable) {
         try { await writable.abort(); } catch { /* Already closed or errored. */ }
       }
-      if (task.controller.signal.aborted || error.name === "AbortError") finishTask(task, "cancelled");
-      else finishTask(task, "failed", error);
+      task.received = task.offset;
+      if (task.controller.signal.aborted || error.name === "AbortError") {
+        try { await deleteResumeRecord(task); task.persisted = false; }
+        catch (storageError) { finishTask(task, "failed", storageError); return; }
+        finishTask(task, "cancelled");
+      } else finishTask(task, "failed", error);
     } finally {
       parts.length = 0;
       task.handle = null;
@@ -591,11 +750,14 @@
   const pumpDownloads = () => {
     while (runningDownloads < MAX_CONCURRENT_DOWNLOADS && downloadQueue.length) {
       const task = downloadQueue.shift();
-      if (task.finished) continue;
+      if (task.finished || task.cancelling) continue;
       runningDownloads++;
       task.running = true;
-      runTask(task).finally(() => {
+      withResumeLock(task, () => runTask(task)).catch(error => {
+        finishTask(task, "failed", error);
+      }).finally(() => {
         task.running = false;
+        if (task.finished) task.resolve?.(task.result);
         runningDownloads--;
         pumpDownloads();
       });
@@ -603,7 +765,7 @@
   };
   const downloadMedia = (url, kind) => {
     if (typeof url !== "string" || !url) return Promise.resolve();
-    const key = `${kind}:${url}`;
+    const key = getDownloadKey(url, kind);
     const existing = activeDownloads.get(key);
     if (existing) {
       const card = showTask(existing);
@@ -611,46 +773,85 @@
       card.focus({ preventScroll: true });
       return existing.promise;
     }
+    const resumable = Array.from(downloadTasks.values()).find(task =>
+      task.key === key && task.persisted && task.finished && ["paused", "failed"].includes(task.state)
+    );
+    if (resumable) { resumable.url = url; return startTask(resumable); }
     // Retain a small history without retaining media buffers.
     for (const previous of downloadTasks.values()) {
       if (downloadTasks.size < 20) break;
-      if (previous.finished) dismissTask(previous);
+      if (previous.finished && !previous.persisted) dismissTask(previous);
     }
     const task = {
       id: Math.random().toString(36).slice(2) + Date.now().toString(36),
       key, url, kind, fileName: getDownloadFileName(url, getMediaMetadata(url)?.mimeType, kind),
-      state: "preparing", received: 0, total: null, controller: new AbortController(),
-      startedAt: performance.now(), renderedAt: 0, finished: false,
+      offset: 0, total: null, mime: null, validator: null,
     };
-    task.promise = new Promise(resolve => { task.resolve = resolve; });
     downloadTasks.set(task.id, task);
-    activeDownloads.set(key, task);
+    return startTask(task);
+  };
+  const startTask = (task) => {
+    if (task.running) return task.promise;
+    if (activeDownloads.has(task.key)) return activeDownloads.get(task.key).promise;
+    Object.assign(task, {
+      state: "preparing", received: task.offset, controller: new AbortController(), error: null, cancelling: false,
+      startedAt: performance.now(), renderedAt: 0, finished: false,
+    });
+    task.promise = new Promise(resolve => { task.resolve = resolve; });
+    activeDownloads.set(task.key, task);
     showTask(task);
-    const enqueue = (handle) => {
+    navigator.storage?.persist?.().catch(() => {});
+    const enqueue = async (handle) => {
       if (task.finished) return;
       task.handle = handle;
+      task.preferredName = handle?.name || task.preferredName;
       task.fileName = handle?.name || task.fileName;
       task.state = "queued";
       renderTask(task);
-      downloadQueue.push(task);
-      pumpDownloads();
+      try {
+        if (!task.persisted) {
+          task.registration = saveResumeRecord(task);
+          await task.registration;
+          task.persisted = true;
+        }
+        if (task.cancelling) return;
+        if (task.finished) { await deleteResumeRecord(task); task.persisted = false; return; }
+        downloadQueue.push(task);
+        pumpDownloads();
+      } catch (error) { finishTask(task, "failed", error); }
     };
     try {
       const pageWindow = typeof unsafeWindow === "undefined" ? window : unsafeWindow;
-      if (kind !== "image" && typeof pageWindow.showSaveFilePicker === "function" &&
+      if (task.kind !== "image" && typeof pageWindow.showSaveFilePicker === "function" &&
           pageWindow.self === pageWindow.top) {
         // Keep the picker inside the original click, before queueing or fetching.
         Promise.resolve(pageWindow.showSaveFilePicker({ suggestedName: task.fileName }))
           .then(enqueue, (error) => {
-            if (error.name === "AbortError") finishTask(task, "cancelled");
+            if (error.name === "AbortError") finishTask(task, task.persisted ? "paused" : "cancelled");
             else enqueue(null);
           });
       } else enqueue(null);
     } catch (error) {
-      if (error.name === "AbortError") finishTask(task, "cancelled");
+      if (error.name === "AbortError") finishTask(task, task.persisted ? "paused" : "cancelled");
       else enqueue(null);
     }
     return task.promise;
+  };
+  const restoreResumeTasks = async () => {
+    try {
+      const records = await resumeTransaction(["tasks"], "readonly", tx => tx.objectStore("tasks").getAll());
+      for (const record of records) {
+        if (typeof record.id !== "string" || typeof record.url !== "string" ||
+            !["video", "audio", "image"].includes(record.kind) ||
+            !Number.isSafeInteger(record.offset) || record.offset < 0 ||
+            (record.total !== null && (!Number.isSafeInteger(record.total) || record.total < record.offset)) ||
+            record.key !== getDownloadKey(record.url, record.kind) || downloadTasks.has(record.id)) continue;
+        const task = { ...record, persisted: true, finished: true, state: "paused",
+          received: record.offset, startedAt: performance.now(), renderedAt: 0 };
+        downloadTasks.set(task.id, task);
+        showTask(task);
+      }
+    } catch (error) { logger.error(error); }
   };
   const tel_download_video = (url) => downloadMedia(url, "video");
   const tel_download_audio = (url) => downloadMedia(url, "audio");
@@ -1058,6 +1259,7 @@
     #tel-downloader-progress-bar-container .progress > div { position: absolute; height: 100%; background: var(--tel-accent); opacity: .35; }
     #tel-downloader-progress-bar-container .progress > p { position: relative; text-align: center; line-height: 1.5; padding: 3px 8px; overflow-wrap: anywhere; color: var(--tel-fg); }
     #tel-downloader-progress-bar-container .tel-task-details { color: var(--tel-muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    #tel-downloader-progress-bar-container .tel-task-resume-hint { color: var(--tel-muted); margin-top: 8px; overflow-wrap: anywhere; }
     #tel-downloader-progress-bar-container .tel-task-error { color: var(--tel-error); margin-top: 8px; overflow-wrap: anywhere; }
     #tel-downloader-progress-bar-container .tel-task-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; margin-top: 4px; }
     #tel-downloader-progress-bar-container .tel-task-state { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
@@ -1069,6 +1271,7 @@
   document.head.appendChild(style);
   document.body.appendChild(panel);
   refreshLanguage();
+  const resumeTasksReady = restoreResumeTasks();
 
   const isWebK = location.hostname === "webk.telegram.org" || location.pathname.startsWith("/k/");
   const isWebA = location.hostname === "webz.telegram.org" || location.pathname.startsWith("/a/");
