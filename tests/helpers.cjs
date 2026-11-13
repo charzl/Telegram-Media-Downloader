@@ -53,6 +53,19 @@ exports.openPage = async (browser, html = '', pathname = '/k/', options = {}) =>
       return response(/\.(jpg|jpeg|png)$/.test(url) ? 'image/jpeg' : 'video/mp4', 'bytes 0-2/3');
     };
     window.settle = () => new Promise(resolve => setTimeout(resolve, 50));
+    window.accelerateRetries = true;
+    window.retryDelays = [];
+    window.retryLabels = [];
+    const timeout = window.setTimeout;
+    window.setTimeout = (callback, delay, ...args) => {
+      const cards = document.querySelectorAll('.tel-task');
+      if (accelerateRetries && cards.length === 1 && cards[0].dataset.state === 'retrying' && delay >= 1000 && delay <= 60000) {
+        retryDelays.push(delay);
+        retryLabels.push(cards[0].querySelector('.progress p').textContent);
+        return timeout(callback, 0, ...args);
+      }
+      return timeout(callback, delay, ...args);
+    };
     window.waitUntil = async condition => {
       const deadline = performance.now() + 5000;
       while (!await condition()) {

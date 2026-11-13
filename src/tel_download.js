@@ -4,7 +4,7 @@
 // @name:zh-CN   Telegram 受限图片视频下载器
 // @name:zh-TW   Telegram 受限圖片影片下載器
 // @name:ru      Telegram: загрузчик медиафайлов
-// @version      2.1.2
+// @version      2.1.3
 // @namespace    https://github.com/Neet-Nestor/Telegram-Media-Downloader
 // @updateURL    https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
 // @downloadURL  https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
@@ -30,6 +30,9 @@
   };
   const UI_MESSAGES = {
     en: {
+      retrying: "Retrying ({attempt}/{max})", retryWait: "Waiting {seconds}s before next attempt",
+      retryExhausted: "Automatic retries failed. Resume manually when ready.", retryLater: "The server requested a longer wait. Please resume later.",
+      errorNetwork: "Network request failed: {message}",
       errorMemorySave: "This browser cannot save large files with low memory use. Choose a save location or use a browser with direct file saving.",
       changeLocation: "Change save location", errorFilePermission: "Allow access to the original file to resume, or choose another save location.",
       errorDestination: "Cannot reopen the original file: {message}. Choose another save location to continue.",
@@ -55,6 +58,9 @@
       errorUnexpected: "Download failed: {message}",
     },
     "zh-CN": {
+      retrying: "自动重试（{attempt}/{max}）", retryWait: "等待 {seconds} 秒后重试",
+      retryExhausted: "自动重试后仍未成功，请稍后手动继续。", retryLater: "服务器要求等待较长时间，请稍后手动继续。",
+      errorNetwork: "网络请求失败：{message}",
       errorMemorySave: "当前浏览器无法以低内存方式保存大文件。请选择保存位置，或使用支持直接保存文件的浏览器。",
       changeLocation: "更换保存位置", errorFilePermission: "请允许访问原文件以继续下载，或选择其他保存位置。",
       errorDestination: "无法重新打开原文件：{message}。请选择其他保存位置以继续下载。",
@@ -80,6 +86,9 @@
       errorUnexpected: "下载失败：{message}",
     },
     "zh-TW": {
+      retrying: "自動重試（{attempt}/{max}）", retryWait: "等待 {seconds} 秒後重試",
+      retryExhausted: "自動重試後仍未成功，請稍後手動繼續。", retryLater: "伺服器要求等待較長時間，請稍後手動繼續。",
+      errorNetwork: "網路請求失敗：{message}",
       errorMemorySave: "目前瀏覽器無法以低記憶體方式儲存大檔案。請選擇儲存位置，或使用支援直接儲存檔案的瀏覽器。",
       changeLocation: "更換儲存位置", errorFilePermission: "請允許存取原檔案以繼續下載，或選擇其他儲存位置。",
       errorDestination: "無法重新開啟原檔案：{message}。請選擇其他儲存位置以繼續下載。",
@@ -105,6 +114,9 @@
       errorUnexpected: "下載失敗：{message}",
     },
     ru: {
+      retrying: "Повтор ({attempt}/{max})", retryWait: "Следующая попытка через {seconds} с",
+      retryExhausted: "Автоматические попытки исчерпаны. Продолжите вручную позже.", retryLater: "Сервер просит подождать дольше. Продолжите позже.",
+      errorNetwork: "Ошибка сети: {message}",
       errorMemorySave: "Браузер не может сохранять большие файлы с малым расходом памяти. Выберите место сохранения или браузер с прямой записью файлов.",
       changeLocation: "Изменить место сохранения", errorFilePermission: "Разрешите доступ к исходному файлу или выберите другое место сохранения.",
       errorDestination: "Не удалось открыть исходный файл: {message}. Выберите другое место сохранения.",
@@ -130,6 +142,9 @@
       errorUnexpected: "Не удалось скачать: {message}",
     },
     my: {
+      retrying: "အလိုအလျောက် ထပ်စမ်းနေသည် ({attempt}/{max})", retryWait: "{seconds} စက္ကန့်နောက် ထပ်စမ်းမည်",
+      retryExhausted: "အလိုအလျောက် ထပ်စမ်းခြင်း မအောင်မြင်ပါ။ နောက်မှ ကိုယ်တိုင် ဆက်လုပ်ပါ။", retryLater: "ဆာဗာက ပိုကြာကြာစောင့်ရန် တောင်းဆိုထားသည်။ နောက်မှ ဆက်လုပ်ပါ။",
+      errorNetwork: "ကွန်ရက် တောင်းဆိုမှု မအောင်မြင်ပါ: {message}",
       errorMemorySave: "ဤဘရောက်ဇာတွင် ဖိုင်ကြီးများကို မမ်မိုရီနည်းနည်းဖြင့် မသိမ်းနိုင်ပါ။ သိမ်းဆည်းမည့်နေရာ ရွေးပါ သို့မဟုတ် ဖိုင်တိုက်ရိုက်သိမ်းနိုင်သော ဘရောက်ဇာကို သုံးပါ။",
       changeLocation: "သိမ်းဆည်းမည့်နေရာ ပြောင်းရန်", errorFilePermission: "ဆက်လုပ်ရန် မူရင်းဖိုင်ကို ဝင်ရောက်ခွင့်ပြုပါ သို့မဟုတ် အခြားသိမ်းဆည်းမည့်နေရာကို ရွေးပါ။",
       errorDestination: "မူရင်းဖိုင်ကို ပြန်မဖွင့်နိုင်ပါ: {message}။ အခြားသိမ်းဆည်းမည့်နေရာကို ရွေးပါ။",
@@ -269,6 +284,9 @@
   const DOWNLOAD_CHUNK_SIZE = 4 * 1024 * 1024;
   const CACHE_BLOCK_SIZE = 1024 * 1024;
   const MEMORY_EXPORT_LIMIT = 8 * 1024 * 1024;
+  const MAX_AUTO_RETRIES = 3;
+  const AUTO_RETRY_BASE_DELAY = 1000;
+  const MAX_AUTO_RETRY_DELAY = 60000;
   const fetchMediaPart = async (url, offset, total, kind, options = {}) => {
     const controller = new AbortController();
     const abort = () => controller.abort(options.signal.reason);
@@ -283,20 +301,32 @@
     const checkAborted = () => {
       if (controller.signal.aborted) throw controller.signal.reason;
     };
+    const networkRequest = async operation => {
+      try { return await operation(); }
+      catch (error) {
+        checkAborted();
+        throw Object.assign(downloadError("errorNetwork", { message: error.message || String(error) }), { retryable: true });
+      }
+    };
     if (options.signal?.aborted) abort();
     options.signal?.addEventListener("abort", abort, { once: true });
     resetTimeout();
     try {
       checkAborted();
-      const res = await fetch(url, {
+      const res = await networkRequest(() => fetch(url, {
         headers: url.startsWith("blob:") ? {} : {
           Range: `bytes=${offset}-${options.end ?? offset + DOWNLOAD_CHUNK_SIZE - 1}`,
           ...(options.validator ? { "If-Range": options.validator.value } : {}),
         },
         signal: controller.signal,
-      });
+      }));
       if (res.status !== 200 && res.status !== 206) {
-        throw downloadError("errorHttp", { status: res.status });
+        const error = downloadError("errorHttp", { status: res.status });
+        error.retryable = [408, 429].includes(res.status) || (res.status >= 500 && res.status <= 599);
+        const after = res.headers.get("Retry-After")?.trim();
+        const wait = after && (/^\d+$/.test(after) ? Number(after) * 1000 : Date.parse(after) - Date.now());
+        if (Number.isFinite(wait) && wait >= 0) error.retryAfterMs = wait;
+        throw error;
       }
       let mime = res.headers.get("Content-Type")?.split(";")[0].trim().toLowerCase();
       if (kind !== "image" && (!mime || mime === "application/octet-stream")) {
@@ -365,7 +395,7 @@
       options.onProgress?.(offset, totalSize ?? null);
       while (true) {
         checkAborted();
-        const { value, done } = await reader.read();
+        const { value, done } = await networkRequest(() => reader.read());
         checkAborted();
         if (done) break;
         received += value.byteLength;
@@ -400,6 +430,7 @@
         : expectedSize !== undefined && received !== expectedSize)) {
         throw downloadError("errorIncomplete");
       }
+      clearTimeout(timer);
       if (options.stage) await flush();
       return {
         sample,
@@ -727,7 +758,7 @@
   const renderTask = (task) => {
     const card = document.getElementById("tel-downloader-progress-" + task.id);
     if (!card) return;
-    const label = t(task.state);
+    const label = t(task.state, { attempt: task.retryAttempt, max: MAX_AUTO_RETRIES });
     card.dataset.state = task.state;
     const title = card.querySelector(".filename");
     title.textContent = task.fileName;
@@ -748,12 +779,15 @@
       Math.max((performance.now() - task.startedAt) / 1000, 0.1);
     card.querySelector(".tel-task-details").textContent =
       formatBytes(task.received) + (task.total !== null ? ` / ${formatBytes(task.total)}` : "") +
-      (task.state === "downloading" && task.received ? ` · ${t("rate", { speed: formatBytes(speed) })}` : "");
+      (task.state === "downloading" && task.received ? ` · ${t("rate", { speed: formatBytes(speed) })}` : "") +
+      (task.state === "retrying" ? ` · ${t("retryWait", { seconds: Math.ceil(task.retryDelay / 1000) })}` : "");
     const error = card.querySelector(".tel-task-error");
     error.textContent = formatDownloadError(task.error);
     error.hidden = !task.error;
     const hint = card.querySelector(".tel-task-resume-hint");
     hint.textContent = t("resumeHint");
+    if (task.retryExhausted) hint.textContent += " " + t("retryExhausted");
+    else if (task.error?.retryAfterMs > MAX_AUTO_RETRY_DELAY) hint.textContent += " " + t("retryLater");
     hint.hidden = !task.persisted || !["paused", "failed"].includes(task.state);
     const cancel = card.querySelector('[data-action="cancel"]');
     cancel.textContent = t("cancel");
@@ -770,6 +804,48 @@
     task.renderedAt = performance.now();
     task.renderedBytes = task.received;
     updateTaskPanel();
+  };
+  const waitForRetry = (task, delay) => new Promise((resolve, reject) => {
+    const signal = task.controller.signal;
+    let timer;
+    const abort = () => {
+      clearTimeout(timer);
+      signal.removeEventListener("abort", abort);
+      reject(signal.reason);
+    };
+    if (signal.aborted) { abort(); return; }
+    signal.addEventListener("abort", abort, { once: true });
+    timer = setTimeout(() => { signal.removeEventListener("abort", abort); resolve(); }, delay);
+  });
+  const retryMediaRequest = async (task, request, reset) => {
+    const committedTotal = task.total;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const result = await request();
+        task.retryAttempt = 0;
+        task.retryExhausted = false;
+        return result;
+      } catch (error) {
+        if (task.controller.signal.aborted) throw task.controller.signal.reason;
+        const retryable = error.retryable || ["errorTimeout", "errorIncomplete", "errorEmpty"].includes(error.translationKey);
+        const delay = Math.max(AUTO_RETRY_BASE_DELAY * 2 ** attempt, error.retryAfterMs || 0);
+        if (!retryable || attempt >= MAX_AUTO_RETRIES || delay > MAX_AUTO_RETRY_DELAY) {
+          task.retryExhausted = Boolean(retryable && attempt >= MAX_AUTO_RETRIES);
+          throw error;
+        }
+        await reset?.();
+        if (task.controller.signal.aborted) throw task.controller.signal.reason;
+        clearTimeout(task.progressTimer);
+        task.progressTimer = null;
+        Object.assign(task, { state: "retrying", received: task.offset, total: committedTotal,
+          retryAttempt: attempt + 1, retryDelay: delay, error });
+        logger.info(`Retry ${attempt + 1}/${MAX_AUTO_RETRIES} after ${delay}ms: ${error.message}`, task.fileName);
+        renderTask(task);
+        await waitForRetry(task, delay);
+        Object.assign(task, { state: "downloading", error: null, startedAt: performance.now(), startedOffset: task.offset });
+        renderTask(task);
+      }
+    }
   };
   const finishTask = (task, state, error) => {
     if (task.finished) return;
@@ -820,19 +896,20 @@
       // Telegram does not always supply validators. Also compare a saved suffix
       // before appending any new bytes, including after a URL was refreshed.
       if (task.offset && task.offset < task.total) {
-        const probe = await fetchMediaPart(task.url, task.offset - sample.byteLength, task.total, task.kind, {
+        const probe = await retryMediaRequest(task, () => fetchMediaPart(task.url, task.offset - sample.byteLength, task.total, task.kind, {
           signal: task.controller.signal, end: task.offset - 1, mime: task.mime, validator: task.validator,
           sampleSize: sample.byteLength,
-        });
+        }));
         if (probe.sample.length !== sample.length || probe.sample.some((byte, index) => byte !== sample[index])) {
           throw downloadError("errorSourceChanged");
         }
       }
       while (!task.total || task.offset < task.total) {
-        const part = await fetchMediaPart(task.url, task.offset, task.total, task.kind, {
+        let written = 0;
+        const part = await retryMediaRequest(task, () => fetchMediaPart(task.url, task.offset, task.total, task.kind, {
           signal: task.controller.signal,
           stage: (offset, data) => stageResumeChunk(task, offset, data), mime: task.mime, validator: task.validator,
-          write: writable ? (chunk) => writable.write(chunk) : undefined,
+          write: writable ? async chunk => { await writable.write(chunk); written += chunk.byteLength; } : undefined,
           onProgress: (received, size) => {
             task.received = received;
             task.total = size;
@@ -845,6 +922,16 @@
               }, 100);
             }
           },
+        }), async () => {
+          await discardUncommittedChunks(task);
+          if (writable && written) {
+            if (typeof writable.truncate !== "function" || typeof writable.seek !== "function") {
+              throw downloadError("errorDestination", { message: "Cannot rewind the interrupted file write" });
+            }
+            await writable.truncate(task.offset);
+            await writable.seek(task.offset);
+          }
+          written = 0;
         });
         checkCancelled();
         task.fileName = task.preferredName || getDownloadFileName(task.url, part.mime, task.kind);
@@ -930,6 +1017,7 @@
     Object.assign(task, {
       state: "preparing", received: task.offset, controller: new AbortController(), error: null, cancelling: false,
       reusingDestination: false, registration: null,
+      retryAttempt: 0, retryDelay: 0, retryExhausted: false,
       startedAt: performance.now(), renderedAt: 0, finished: false,
     });
     task.promise = new Promise(resolve => { task.resolve = resolve; });
