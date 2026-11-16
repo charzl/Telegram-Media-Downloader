@@ -4,7 +4,7 @@
 // @name:zh-CN   Telegram 受限图片视频下载器
 // @name:zh-TW   Telegram 受限圖片影片下載器
 // @name:ru      Telegram: загрузчик медиафайлов
-// @version      2.1.3
+// @version      2.1.4
 // @namespace    https://github.com/Neet-Nestor/Telegram-Media-Downloader
 // @updateURL    https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
 // @downloadURL  https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
@@ -30,6 +30,9 @@
   };
   const UI_MESSAGES = {
     en: {
+      restoring: "Restoring saved data", verifying: "Checking media source", waiting: "Waiting for media data",
+      localProgress: "{received} / {total} processed", waitingHint: "No new data yet. Requests time out after 30 seconds and retry automatically.",
+      restart: "Download again from start", restartHint: "Discard this task's saved parts and download again using the remembered address and save location.",
       retrying: "Retrying ({attempt}/{max})", retryWait: "Waiting {seconds}s before next attempt",
       retryExhausted: "Automatic retries failed. Resume manually when ready.", retryLater: "The server requested a longer wait. Please resume later.",
       errorNetwork: "Network request failed: {message}",
@@ -58,6 +61,9 @@
       errorUnexpected: "Download failed: {message}",
     },
     "zh-CN": {
+      restoring: "恢复已下载内容", verifying: "校验媒体来源", waiting: "等待媒体数据",
+      localProgress: "已处理 {received} / {total}", waitingHint: "暂未收到新数据，请求将在 30 秒无响应后超时并自动重试。",
+      restart: "从头重新下载", restartHint: "丢弃此任务已保存的分段，使用记住的地址和保存位置从头下载。",
       retrying: "自动重试（{attempt}/{max}）", retryWait: "等待 {seconds} 秒后重试",
       retryExhausted: "自动重试后仍未成功，请稍后手动继续。", retryLater: "服务器要求等待较长时间，请稍后手动继续。",
       errorNetwork: "网络请求失败：{message}",
@@ -86,6 +92,9 @@
       errorUnexpected: "下载失败：{message}",
     },
     "zh-TW": {
+      restoring: "還原已下載內容", verifying: "檢查媒體來源", waiting: "等待媒體資料",
+      localProgress: "已處理 {received} / {total}", waitingHint: "尚未收到新資料，請求將在 30 秒無回應後逾時並自動重試。",
+      restart: "從頭重新下載", restartHint: "捨棄此任務已儲存的分段，使用記住的位址和儲存位置從頭下載。",
       retrying: "自動重試（{attempt}/{max}）", retryWait: "等待 {seconds} 秒後重試",
       retryExhausted: "自動重試後仍未成功，請稍後手動繼續。", retryLater: "伺服器要求等待較長時間，請稍後手動繼續。",
       errorNetwork: "網路請求失敗：{message}",
@@ -114,6 +123,9 @@
       errorUnexpected: "下載失敗：{message}",
     },
     ru: {
+      restoring: "Восстановление сохранённых данных", verifying: "Проверка источника", waiting: "Ожидание данных",
+      localProgress: "Обработано {received} / {total}", waitingHint: "Новых данных пока нет. Через 30 секунд без ответа запрос будет повторён автоматически.",
+      restart: "Скачать заново", restartHint: "Удалить сохранённые части и скачать заново по сохранённому адресу в прежний файл.",
       retrying: "Повтор ({attempt}/{max})", retryWait: "Следующая попытка через {seconds} с",
       retryExhausted: "Автоматические попытки исчерпаны. Продолжите вручную позже.", retryLater: "Сервер просит подождать дольше. Продолжите позже.",
       errorNetwork: "Ошибка сети: {message}",
@@ -142,6 +154,9 @@
       errorUnexpected: "Не удалось скачать: {message}",
     },
     my: {
+      restoring: "သိမ်းထားသောဒေတာ ပြန်လည်ရယူနေသည်", verifying: "မီဒီယာရင်းမြစ် စစ်ဆေးနေသည်", waiting: "မီဒီယာဒေတာ စောင့်နေသည်",
+      localProgress: "{received} / {total} ပြီးစီးသည်", waitingHint: "ဒေတာအသစ် မရသေးပါ။ စက္ကန့် ၃၀ မတုံ့ပြန်လျှင် အလိုအလျောက် ထပ်စမ်းမည်။",
+      restart: "အစမှ ပြန်ဒေါင်းလုဒ်လုပ်ရန်", restartHint: "သိမ်းထားသောအပိုင်းများကို ဖယ်ပြီး မှတ်ထားသောလင့်ခ်နှင့် နေရာတွင် အစမှ ပြန်ဒေါင်းလုဒ်လုပ်မည်။",
       retrying: "အလိုအလျောက် ထပ်စမ်းနေသည် ({attempt}/{max})", retryWait: "{seconds} စက္ကန့်နောက် ထပ်စမ်းမည်",
       retryExhausted: "အလိုအလျောက် ထပ်စမ်းခြင်း မအောင်မြင်ပါ။ နောက်မှ ကိုယ်တိုင် ဆက်လုပ်ပါ။", retryLater: "ဆာဗာက ပိုကြာကြာစောင့်ရန် တောင်းဆိုထားသည်။ နောက်မှ ဆက်လုပ်ပါ။",
       errorNetwork: "ကွန်ရက် တောင်းဆိုမှု မအောင်မြင်ပါ: {message}",
@@ -576,6 +591,10 @@
     offset: task.offset, total: task.total, mime: task.mime, validator: task.validator, updatedAt: Date.now(),
   });
   const saveResumeRecord = task => resumeTransaction(["tasks"], "readwrite", tx => tx.objectStore("tasks").put(resumeRecord(task)));
+  const restartResumeRecord = task => resumeTransaction(["tasks", "chunks"], "readwrite", tx => {
+    tx.objectStore("chunks").delete(IDBKeyRange.bound([task.id, 0], [task.id, Number.MAX_SAFE_INTEGER]));
+    tx.objectStore("tasks").put({ ...resumeRecord(task), offset: 0, total: null, mime: null, validator: null });
+  });
   const refreshResumeRecord = async task => {
     const record = await readResumeRecord(task.id);
     if (!record || record.key !== task.key) throw downloadError("errorCache");
@@ -620,9 +639,10 @@
     ]) : `${kind}:${url}`;
   };
 
-  const visitCachedMedia = async (task, write) => {
+  const visitCachedMedia = async (task, write, onProgress) => {
     let offset = 0;
     let sample;
+    onProgress?.(0, task.offset);
     while (offset < task.offset) {
       if (task.controller.signal.aborted) throw task.controller.signal.reason;
       const chunk = await readResumeChunk(task.id, offset);
@@ -637,12 +657,20 @@
         if (task.controller.signal.aborted) throw task.controller.signal.reason;
         await write(data instanceof Uint8Array ? data.subarray(position, position + CACHE_BLOCK_SIZE)
           : data.slice(position, position + CACHE_BLOCK_SIZE));
+        onProgress?.(offset + Math.min(size, position + CACHE_BLOCK_SIZE), task.offset);
       }
       sample = data instanceof Uint8Array ? data.slice(-Math.min(1024, size))
         : new Uint8Array(await data.slice(-Math.min(1024, size)).arrayBuffer());
       offset += size;
+      if (!write) onProgress?.(offset, task.offset);
     }
     return sample;
+  };
+  const showLocalProgress = (task, received, total) => {
+    const first = !task.localReceived;
+    task.localReceived = received;
+    task.localTotal = total;
+    if (first || received === total || performance.now() - task.renderedAt >= 100) renderTask(task);
   };
   const EXPORT_DIRECTORY = "tel-media-downloader-exports";
   const openExportDirectory = async () => {
@@ -666,7 +694,7 @@
     catch {
       if (task.offset > MEMORY_EXPORT_LIMIT) throw downloadError("errorMemorySave");
       const parts = [];
-      await visitCachedMedia(task, data => { parts.push(data); });
+      await visitCachedMedia(task, data => { parts.push(data); }, (received, total) => showLocalProgress(task, received, total));
       saveMediaBlob(new Blob(parts, { type: task.mime }), task.fileName);
       return;
     }
@@ -675,7 +703,7 @@
     try {
       const handle = await directory.getFileHandle(name, { create: true });
       writable = await handle.createWritable();
-      await visitCachedMedia(task, data => writable.write(data));
+      await visitCachedMedia(task, data => writable.write(data), (received, total) => showLocalProgress(task, received, total));
       await writable.close();
       writable = null;
       // A file-backed Blob avoids assembling the entire media in RAM.
@@ -730,7 +758,7 @@
         <span class="tel-task-state" role="status" aria-live="polite"></span>
         <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div></div><p></p></div>
         <p class="tel-task-details"></p><p class="tel-task-error"></p><p class="tel-task-resume-hint"></p>
-        <div class="tel-task-actions"><button type="button" data-action="cancel"></button><button type="button" data-action="retry" hidden></button><button type="button" data-action="location" hidden></button></div>`;
+        <div class="tel-task-actions"><button type="button" data-action="cancel"></button><button type="button" data-action="retry" hidden></button><button type="button" data-action="restart" hidden></button><button type="button" data-action="location" hidden></button></div>`;
       card.querySelector('[data-action="dismiss"]').onclick = () => dismissTask(task);
       card.querySelector('[data-action="cancel"]').onclick = async () => {
         if (task.finished || task.state === "saving") return;
@@ -746,10 +774,11 @@
         }
       };
       card.querySelector('[data-action="retry"]').onclick = () => {
-        if (task.persisted) startTask(task);
+        if (task.persisted) { refreshTaskUrl(task); startTask(task); }
         else { dismissTask(task); downloadMedia(task.url, task.kind); }
       };
-      card.querySelector('[data-action="location"]').onclick = () => startTask(task, true);
+      card.querySelector('[data-action="location"]').onclick = () => { refreshTaskUrl(task); startTask(task, true); };
+      card.querySelector('[data-action="restart"]').onclick = () => { refreshTaskUrl(task); startTask(task, false, true); };
       list.prepend(card);
     }
     renderTask(task);
@@ -768,18 +797,23 @@
     const progress = card.querySelector(".progress");
     progress.setAttribute("aria-label", t("progress"));
     card.querySelector('[data-action="dismiss"]').setAttribute("aria-label", t("dismiss"));
-    const percent = task.total ? Math.min(100, Math.floor(task.received * 100 / task.total)) : null;
-    progress.classList.toggle("tel-indeterminate", task.state === "downloading" && percent === null);
+    const local = ["restoring", "saving"].includes(task.state) && task.localTotal > 0;
+    const percent = local ? Math.min(100, Math.floor(task.localReceived * 100 / task.localTotal))
+      : task.total ? Math.min(100, Math.floor(task.received * 100 / task.total)) : null;
+    progress.classList.toggle("tel-indeterminate", ["waiting", "verifying"].includes(task.state) || (task.state === "downloading" && percent === null));
     if (percent === null) progress.removeAttribute("aria-valuenow");
     else progress.setAttribute("aria-valuenow", percent);
     progress.setAttribute("aria-valuetext", label);
     progress.querySelector("div").style.width = (percent ?? 0) + "%";
-    progress.querySelector("p").textContent = task.state === "downloading" && percent !== null ? `${integerFormat.format(percent)}%` : label;
+    progress.querySelector("p").textContent = local ? `${label} · ${integerFormat.format(percent)}%`
+      : task.state === "downloading" && percent !== null ? `${integerFormat.format(percent)}%` : label;
     const speed = Math.max(0, task.received - (task.startedOffset || 0)) /
       Math.max((performance.now() - task.startedAt) / 1000, 0.1);
     card.querySelector(".tel-task-details").textContent =
-      formatBytes(task.received) + (task.total !== null ? ` / ${formatBytes(task.total)}` : "") +
+      (local ? t("localProgress", { received: formatBytes(task.localReceived), total: formatBytes(task.localTotal) })
+        : formatBytes(task.received) + (task.total !== null ? ` / ${formatBytes(task.total)}` : "")) +
       (task.state === "downloading" && task.received ? ` · ${t("rate", { speed: formatBytes(speed) })}` : "") +
+      (["waiting", "verifying"].includes(task.state) ? ` · ${t("waitingHint")}` : "") +
       (task.state === "retrying" ? ` · ${t("retryWait", { seconds: Math.ceil(task.retryDelay / 1000) })}` : "");
     const error = card.querySelector(".tel-task-error");
     error.textContent = formatDownloadError(task.error);
@@ -796,6 +830,10 @@
     const retry = card.querySelector('[data-action="retry"]');
     retry.textContent = t(task.persisted && task.offset ? "resume" : "retry");
     retry.hidden = !["paused", "failed", "cancelled"].includes(task.state);
+    const restart = card.querySelector('[data-action="restart"]');
+    restart.textContent = t("restart");
+    restart.title = t("restartHint");
+    restart.hidden = !task.finished || !task.persisted || !["paused", "failed"].includes(task.state);
     const locationButton = card.querySelector('[data-action="location"]');
     locationButton.textContent = t("changeLocation");
     const pageWindow = typeof unsafeWindow === "undefined" ? window : unsafeWindow;
@@ -819,6 +857,7 @@
   });
   const retryMediaRequest = async (task, request, reset) => {
     const committedTotal = task.total;
+    const requestState = task.state;
     for (let attempt = 0; ; attempt++) {
       try {
         const result = await request();
@@ -842,7 +881,7 @@
         logger.info(`Retry ${attempt + 1}/${MAX_AUTO_RETRIES} after ${delay}ms: ${error.message}`, task.fileName);
         renderTask(task);
         await waitForRetry(task, delay);
-        Object.assign(task, { state: "downloading", error: null, startedAt: performance.now(), startedOffset: task.offset });
+        Object.assign(task, { state: requestState, error: null, startedAt: performance.now(), startedOffset: task.offset });
         renderTask(task);
       }
     }
@@ -887,7 +926,9 @@
       checkCancelled();
       // A writable is a temporary file until close(). Rebuild it from durable
       // chunks after a crash rather than trusting an uncommitted destination.
-      const sample = await visitCachedMedia(task, writable ? data => writable.write(data) : undefined);
+      if (task.offset) { task.state = "restoring"; renderTask(task); }
+      const sample = await visitCachedMedia(task, writable ? data => writable.write(data) : undefined,
+        (received, total) => showLocalProgress(task, received, total));
       checkCancelled();
       task.state = "downloading";
       task.startedAt = performance.now();
@@ -896,6 +937,8 @@
       // Telegram does not always supply validators. Also compare a saved suffix
       // before appending any new bytes, including after a URL was refreshed.
       if (task.offset && task.offset < task.total) {
+        task.state = "verifying";
+        renderTask(task);
         const probe = await retryMediaRequest(task, () => fetchMediaPart(task.url, task.offset - sample.byteLength, task.total, task.kind, {
           signal: task.controller.signal, end: task.offset - 1, mime: task.mime, validator: task.validator,
           sampleSize: sample.byteLength,
@@ -905,12 +948,15 @@
         }
       }
       while (!task.total || task.offset < task.total) {
+        task.state = "waiting";
+        renderTask(task);
         let written = 0;
         const part = await retryMediaRequest(task, () => fetchMediaPart(task.url, task.offset, task.total, task.kind, {
           signal: task.controller.signal,
           stage: (offset, data) => stageResumeChunk(task, offset, data), mime: task.mime, validator: task.validator,
           write: writable ? async chunk => { await writable.write(chunk); written += chunk.byteLength; } : undefined,
           onProgress: (received, size) => {
+            if (received > task.offset) task.state = "downloading";
             task.received = received;
             task.total = size;
             if ((!task.renderedBytes && received) || performance.now() - task.renderedAt >= 100 || received === size) {
@@ -945,6 +991,8 @@
       }
       checkCancelled();
       task.state = "saving";
+      task.localReceived = 0;
+      task.localTotal = writable ? 0 : task.offset;
       renderTask(task);
       if (writable) await writable.close();
       else await saveCachedMedia(task);
@@ -1011,13 +1059,25 @@
     downloadTasks.set(task.id, task);
     return startTask(task);
   };
-  const startTask = (task, chooseLocation = false) => {
+  const refreshTaskUrl = task => {
+    // Telegram may replace an expired file reference in a mounted player. Only
+    // reuse a URL with the same document identity, never a matching filename.
+    const selector = task.kind === "image" ? "img" : task.kind;
+    const viewer = document.querySelector(".media-viewer-whole");
+    const candidates = [...(viewer?.querySelectorAll(selector) || []), ...document.querySelectorAll(selector)];
+    for (const media of candidates) {
+      const url = getMediaSource(media);
+      if (url && getDownloadKey(url, task.kind) === task.key) { task.url = url; break; }
+    }
+  };
+  const startTask = (task, chooseLocation = false, restart = false) => {
     if (task.running) return task.promise;
     if (activeDownloads.has(task.key)) return activeDownloads.get(task.key).promise;
     Object.assign(task, {
       state: "preparing", received: task.offset, controller: new AbortController(), error: null, cancelling: false,
       reusingDestination: false, registration: null,
       retryAttempt: 0, retryDelay: 0, retryExhausted: false,
+      localReceived: 0, localTotal: 0,
       startedAt: performance.now(), renderedAt: 0, finished: false,
     });
     task.promise = new Promise(resolve => { task.resolve = resolve; });
@@ -1036,7 +1096,13 @@
         // Remember a newly selected destination before waiting in the queue,
         // without replacing a newer checkpoint written by another tab.
         task.registration = task.persisted
-          ? withResumeLock(task, () => refreshResumeRecord(task)) : saveResumeRecord(task);
+          ? withResumeLock(task, async () => {
+            await refreshResumeRecord(task);
+            if (restart) {
+              await restartResumeRecord(task);
+              Object.assign(task, { offset: 0, received: 0, total: null, mime: null, validator: null });
+            }
+          }) : saveResumeRecord(task);
         await task.registration;
         task.persisted = true;
         if (task.cancelling) return;
