@@ -58,10 +58,10 @@ exports.openPage = async (browser, html = '', pathname = '/k/', options = {}) =>
     window.retryLabels = [];
     const timeout = window.setTimeout;
     window.setTimeout = (callback, delay, ...args) => {
-      const cards = document.querySelectorAll('.tel-task');
-      if (accelerateRetries && cards.length === 1 && cards[0].dataset.state === 'retrying' && delay >= 1000 && delay <= 60000) {
+      const retryingCard = document.querySelector('.tel-task[data-state="retrying"]');
+      if (accelerateRetries && retryingCard && delay >= 1000 && delay <= 60000) {
         retryDelays.push(delay);
-        retryLabels.push(cards[0].querySelector('.progress p').textContent);
+        retryLabels.push(retryingCard.querySelector('.progress p').textContent);
         return timeout(callback, 0, ...args);
       }
       return timeout(callback, delay, ...args);
