@@ -90,11 +90,11 @@ test('dismissing progress does not cancel a download or break error handling', a
     const result = await page.evaluate(async fail => {
       let respond, calls = 0;
       fetch = () => ++calls === 1 ? new Promise(resolve => { respond = resolve; })
-        : Promise.resolve(response('video/mp4', null, 'error', 500));
+        : Promise.resolve(response('video/mp4', null, 'error', 403));
       const done = downloads.video('https://test.invalid/video');
       document.querySelector('[data-action="dismiss"]').click();
       await waitUntil(() => typeof respond === 'function');
-      respond(response('video/mp4', fail ? null : 'bytes 0-2/3', 'abc', fail ? 500 : 206));
+      respond(response('video/mp4', fail ? null : 'bytes 0-2/3', 'abc', fail ? 403 : 206));
       await done;
       return { saved: saved.length, errors };
     }, fail);
@@ -246,4 +246,37 @@ test('stalled response bodies time out instead of remaining pending', async () =
   assert.equal(result.saved, 0);
   assert.equal(result.errors.length, 1);
   assert.match(result.errors[0], /30 seconds/);
+});
+
+test('range transitions retain percentage and network stalls preserve determinate progress', async () => {
+  page = await openPage(browser);
+  await page.evaluate(() => {
+    fetch = async (url, options) => {
+      requests.push(options.headers.Range);
+      if (requests.length === 1) return response('video/mp4', 'bytes 0-2/6', 'abc');
+      return new Promise(resolve => {
+        window.releaseNextPart = () => resolve(new Response(new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode('d'));
+            window.finishStream = () => { controller.enqueue(new TextEncoder().encode('ef')); controller.close(); };
+          },
+        }), { status: 206, headers: { 'Content-Type': 'video/mp4', 'Content-Range': 'bytes 3-5/6' } }));
+      });
+    };
+    window.done = downloads.video('https://test.invalid/video');
+  });
+  await page.waitForFunction(() => typeof releaseNextPart === 'function');
+  assert.equal(await page.locator('.tel-task').getAttribute('data-state'), 'downloading');
+  assert.equal(await page.locator('.progress p').textContent(), '50%');
+  await page.waitForFunction(() => document.querySelector('.tel-task').dataset.state === 'waiting');
+  assert.equal(await page.locator('.progress p').textContent(), 'Waiting for media data · 50%');
+  assert.equal(await page.locator('.progress').getAttribute('aria-valuenow'), '50');
+  assert.equal(await page.locator('.progress').evaluate(el => el.classList.contains('tel-indeterminate')), false);
+  assert.equal(await page.locator('.progress > div').evaluate(el => el.style.width), '50%');
+  await page.evaluate(() => releaseNextPart());
+  await page.waitForFunction(() => document.querySelector('.progress p').textContent === '66%');
+  assert.equal(await page.locator('.tel-task').getAttribute('data-state'), 'downloading');
+  await page.evaluate(async () => { finishStream(); await done; });
+  assert.deepEqual(await page.evaluate(async () => ({ body: await blobs[0].text(), errors })),
+    { body: 'abcdef', errors: [] });
 });

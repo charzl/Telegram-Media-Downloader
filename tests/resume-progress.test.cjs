@@ -50,7 +50,7 @@ const cache = page => page.evaluate(() => new Promise(resolve => {
   };
 }));
 
-test('resume shows local reconstruction progress, source verification, and waiting for the next bytes', async () => {
+test('resume shows local reconstruction progress, source verification, and percentage while requesting the next bytes', async () => {
   const page = await restoredPage();
   await page.evaluate(() => {
     window.pickerCalls = 0;
@@ -82,7 +82,8 @@ test('resume shows local reconstruction progress, source verification, and waiti
   assert.match(await page.locator('.tel-task-details').textContent(), /30 seconds/);
   await page.evaluate(() => releaseProbe());
   await page.waitForFunction(() => typeof releaseTail === 'function');
-  assert.equal(await page.locator('.tel-task').getAttribute('data-state'), 'waiting');
+  assert.equal(await page.locator('.tel-task').getAttribute('data-state'), 'downloading');
+  assert.equal(await page.locator('.progress p').textContent(), '66%');
   await page.evaluate(() => releaseTail());
   await page.waitForFunction(() => document.querySelector('.tel-task').dataset.state === 'completed');
   assert.deepEqual(await page.evaluate(async () => ({ pickerCalls, requests, errors,
