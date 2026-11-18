@@ -91,7 +91,7 @@ test('exhausted automatic retries expose an error and manual retry can succeed',
     await waitUntil(() => document.querySelector('.tel-task').dataset.state === 'handedOff');
     return { calls, error, saved: saved.length, state: document.querySelector('.tel-task').dataset.state };
   });
-  assert.equal(result.calls, 5);
+  assert.equal(result.calls, 12);
   assert.match(result.error, /HTTP 500/);
   assert.equal(result.saved, 1);
   assert.equal(result.state, 'handedOff');
