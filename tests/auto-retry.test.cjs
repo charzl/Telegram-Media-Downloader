@@ -170,7 +170,8 @@ test('a stalled response can time out and recover automatically', async () => {
   page = await openPage(browser);
   const result = await page.evaluate(async () => {
     const timeout = window.setTimeout;
-    window.setTimeout = (callback, delay, ...args) => timeout(callback, delay === 30000 ? 10 : delay, ...args);
+    window.setTimeout = (callback, delay, ...args) => timeout(callback,
+      delay === 30000 && document.querySelector('.tel-task')?.dataset.state !== 'retrying' ? 10 : delay, ...args);
     let calls = 0;
     fetch = async () => ++calls === 1
       ? new Response(new ReadableStream({ start() {} }), { headers: { 'Content-Type': 'video/mp4' } })
