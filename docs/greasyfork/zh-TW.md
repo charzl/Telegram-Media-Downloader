@@ -24,7 +24,7 @@
 ![影片下載](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXcxYnJxaXMxcW05YW5rZ2YzZzE0bTU4aTBwYXI1N3pmdnVzbDFrdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/EEPbblwmSpteAmwLls/giphy.gif)  
 ![Story 下載](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ3Z5Y2VzM2QzbW1xc3ZwNTQ2N3Q0a3lnanpxdW55c2Qzajl5NXZsaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xJFjBGi8isHPR5cuHl/giphy.gif)  
 
-下載中的影片會顯示**下載進度條**（右下角），但圖片和音訊則不會顯示下載進度。  
+透過腳本下載的影片、圖片和音訊都會顯示在右下角的任務面板。最多同時下載兩個檔案，其餘任務自動排隊。
 
 ### **支援的 Web 版 Telegram**  
 
@@ -37,9 +37,11 @@ Telegram 網頁版目前有兩個主要版本：
 
 ### **如何檢查下載進度**  
 
+下載介面支援英文、簡體中文、繁體中文、俄語和緬甸語，預設跟隨瀏覽器語言，不支援時使用英文。點擊任務面板右上角的齒輪（**設定**），即可在**介面語言**中即時切換，選擇會在目前 Telegram 網頁網域下儲存。
+
 如果你想要檢查當前的下載狀態，你可以：  
 
-1. **查看右下角的進度條**（適用於影片下載）  
+1. **查看右下角的任務面板**，了解已接收大小、速度及總大小已知時的進度。**收合**折疊面板，**×** 隱藏單一任務，均不會中斷下載；**取消**停止下載，**重試**從頭重試。**已完成**表示直接儲存成功；**已交給瀏覽器**表示已交給瀏覽器下載管理員，請在該處確認儲存結果。傳輸完成前請保持 Telegram 分頁開啟。
 2. **開啟瀏覽器的開發者工具 -> 控制台**（適用於所有媒體類型）  
    - **Chrome / Edge:** 按下 `F12` 或 `Ctrl + Shift + I` 進入「開發者工具」，再點選「Console」選項。  
    - **Firefox:** 按下 `F12` 或 `Ctrl + Shift + K` 進入「開發者工具」，再點選「Console」選項。  
