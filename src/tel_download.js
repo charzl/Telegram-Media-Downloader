@@ -4,7 +4,7 @@
 // @name:zh-CN   Telegram 受限图片视频下载器
 // @name:zh-TW   Telegram 受限圖片影片下載器
 // @name:ru      Telegram: загрузчик медиафайлов
-// @version      2.1.4
+// @version      2.1.5
 // @namespace    https://github.com/Neet-Nestor/Telegram-Media-Downloader
 // @updateURL    https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
 // @downloadURL  https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
@@ -296,6 +296,7 @@
   };
   const contentRangeRegex = /^bytes\s+(\d+)-(\d+)\/(\d+|\*)$/i;
   const REFRESH_DELAY = 2000;
+  const MEDIA_WAIT_DELAY = 3000;
   const DOWNLOAD_CHUNK_SIZE = 4 * 1024 * 1024;
   const CACHE_BLOCK_SIZE = 1024 * 1024;
   const MEMORY_EXPORT_LIMIT = 8 * 1024 * 1024;
@@ -317,10 +318,15 @@
       if (controller.signal.aborted) throw controller.signal.reason;
     };
     const networkRequest = async operation => {
+      // A new range request is normal downloading. Only report waiting after
+      // actual network inactivity, never while writing or caching received data.
+      const waitingTimer = options.onWaiting ? setTimeout(options.onWaiting, MEDIA_WAIT_DELAY) : null;
       try { return await operation(); }
       catch (error) {
         checkAborted();
         throw Object.assign(downloadError("errorNetwork", { message: error.message || String(error) }), { retryable: true });
+      } finally {
+        clearTimeout(waitingTimer);
       }
     };
     if (options.signal?.aborted) abort();
@@ -800,13 +806,15 @@
     const local = ["restoring", "saving"].includes(task.state) && task.localTotal > 0;
     const percent = local ? Math.min(100, Math.floor(task.localReceived * 100 / task.localTotal))
       : task.total ? Math.min(100, Math.floor(task.received * 100 / task.total)) : null;
-    progress.classList.toggle("tel-indeterminate", ["waiting", "verifying"].includes(task.state) || (task.state === "downloading" && percent === null));
+    progress.classList.toggle("tel-indeterminate", task.state === "verifying" || (["downloading", "waiting"].includes(task.state) && percent === null));
     if (percent === null) progress.removeAttribute("aria-valuenow");
     else progress.setAttribute("aria-valuenow", percent);
-    progress.setAttribute("aria-valuetext", label);
-    progress.querySelector("div").style.width = (percent ?? 0) + "%";
-    progress.querySelector("p").textContent = local ? `${label} · ${integerFormat.format(percent)}%`
+    const progressLabel = percent !== null && (local || task.state === "waiting")
+      ? `${label} · ${integerFormat.format(percent)}%`
       : task.state === "downloading" && percent !== null ? `${integerFormat.format(percent)}%` : label;
+    progress.setAttribute("aria-valuetext", progressLabel);
+    progress.querySelector("div").style.width = (percent ?? 0) + "%";
+    progress.querySelector("p").textContent = progressLabel;
     const speed = Math.max(0, task.received - (task.startedOffset || 0)) /
       Math.max((performance.now() - task.startedAt) / 1000, 0.1);
     card.querySelector(".tel-task-details").textContent =
@@ -948,13 +956,14 @@
         }
       }
       while (!task.total || task.offset < task.total) {
-        task.state = "waiting";
+        task.state = "downloading";
         renderTask(task);
         let written = 0;
         const part = await retryMediaRequest(task, () => fetchMediaPart(task.url, task.offset, task.total, task.kind, {
           signal: task.controller.signal,
           stage: (offset, data) => stageResumeChunk(task, offset, data), mime: task.mime, validator: task.validator,
           write: writable ? async chunk => { await writable.write(chunk); written += chunk.byteLength; } : undefined,
+          onWaiting: () => { task.state = "waiting"; renderTask(task); },
           onProgress: (received, size) => {
             if (received > task.offset) task.state = "downloading";
             task.received = received;
