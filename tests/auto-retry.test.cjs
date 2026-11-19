@@ -6,7 +6,7 @@ before(async () => { browser = await launch(); });
 after(async () => { await browser?.close(); });
 afterEach(async () => { await page?.close(); await context?.close(); context = null; });
 
-test('temporary network errors retry automatically with 30-second waits and visible attempt counts', async () => {
+test('temporary network errors retry automatically with bounded backoff and visible attempt counts', async () => {
   page = await openPage(browser);
   const result = await page.evaluate(async () => {
     let calls = 0;
@@ -17,7 +17,7 @@ test('temporary network errors retry automatically with 30-second waits and visi
     const task = await downloads.video('https://test.invalid/video');
     return { state: task.state, calls, body: await blobs[0].text(), retryDelays, retryLabels, errors };
   });
-  assert.deepEqual(result, { state: 'handedOff', calls: 3, body: 'abc', retryDelays: [30000, 30000],
+  assert.deepEqual(result, { state: 'handedOff', calls: 3, body: 'abc', retryDelays: [1000, 2000],
     retryLabels: ['Retrying (1/10)', 'Retrying (2/10)'], errors: [] });
 });
 
@@ -37,7 +37,7 @@ test('successful chunks reset the retry budget and completed bytes are not fetch
     return { requests, body: await blobs[0].text(), retryDelays, errors };
   });
   assert.deepEqual(result, { requests: [0, 3, 3, 3, 6, 6, 6], body: 'abcdefghi',
-    retryDelays: [30000, 30000, 30000, 30000], errors: [] });
+    retryDelays: [1000, 2000, 1000, 2000], errors: [] });
 });
 
 test('an interrupted disk response is rewound to the committed offset before retrying', async () => {
@@ -63,7 +63,7 @@ test('an interrupted disk response is rewound to the committed offset before ret
     return { state: task.state, body: await file.text(), pickerCalls, requests, retryDelays, errors };
   });
   assert.deepEqual(result, { state: 'completed', body: 'abcdef', pickerCalls: 1,
-    requests: [0, 3, 3], retryDelays: [30000], errors: [] });
+    requests: [0, 3, 3], retryDelays: [1000], errors: [] });
 });
 
 test('ten automatic retries are the limit before the manual retry action appears', async () => {
@@ -78,7 +78,7 @@ test('ten automatic retries are the limit before the manual retry action appears
   });
   assert.equal(result.state, 'failed');
   assert.equal(result.calls, 11);
-  assert.deepEqual(result.retryDelays, Array(10).fill(30000));
+  assert.deepEqual(result.retryDelays, [1000, 2000, 4000, 8000, 15000, 15000, 15000, 15000, 15000, 15000]);
   assert.equal(result.saved, 0);
   assert.equal(result.retryVisible, true);
   assert.match(result.hint, /Automatic retries failed/);
@@ -129,7 +129,7 @@ test('cancelling during retry wait prevents another request', async () => {
     window.done = downloads.video('https://test.invalid/video');
   });
   await page.waitForSelector('[data-state="retrying"]');
-  await page.locator('[data-action="cancel"]').click();
+  await page.locator('[data-action="dismiss"]').click();
   const result = await page.evaluate(async () => {
     const task = await done;
     await new Promise(resolve => setTimeout(resolve, 1100));
@@ -155,7 +155,7 @@ test('Retry-After is respected and a long server wait requires manual continuati
     if (seconds <= 60) {
       assert.equal(result.state, 'handedOff');
       assert.equal(result.calls, 2);
-      assert.deepEqual(result.retryDelays, [Math.max(30000, seconds * 1000)]);
+      assert.deepEqual(result.retryDelays, [seconds * 1000]);
     } else {
       assert.equal(result.state, 'failed');
       assert.equal(result.calls, 1);
@@ -179,7 +179,7 @@ test('a stalled response can time out and recover automatically', async () => {
     const task = await downloads.video('https://test.invalid/video');
     return { state: task.state, calls, retryDelays, body: await blobs[0].text(), errors };
   });
-  assert.deepEqual(result, { state: 'handedOff', calls: 2, retryDelays: [30000], body: 'abc', errors: [] });
+  assert.deepEqual(result, { state: 'handedOff', calls: 2, retryDelays: [1000], body: 'abc', errors: [] });
 });
 
 test('a resumed task also retries a temporary overlap-probe error', async () => {
@@ -206,6 +206,6 @@ test('a resumed task also retries a temporary overlap-probe error', async () => 
   });
   await page.waitForSelector('[data-state="handedOff"]');
   assert.deepEqual(await page.evaluate(async () => ({ requests, retryDelays, body: await blobs[0].text(), errors })), {
-    requests: ['bytes=0-2', 'bytes=0-2', 'bytes=3-4194306'], retryDelays: [30000], body: 'abcdef', errors: [],
+    requests: ['bytes=0-2', 'bytes=0-2', 'bytes=3-4194306'], retryDelays: [1000], body: 'abcdef', errors: [],
   });
 });

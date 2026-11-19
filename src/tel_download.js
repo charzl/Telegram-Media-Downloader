@@ -4,7 +4,7 @@
 // @name:zh-CN   Telegram 受限图片视频下载器
 // @name:zh-TW   Telegram 受限圖片影片下載器
 // @name:ru      Telegram: загрузчик медиафайлов
-// @version      2.1.5
+// @version      2.1.6
 // @namespace    https://github.com/Neet-Nestor/Telegram-Media-Downloader
 // @updateURL    https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
 // @downloadURL  https://raw.githubusercontent.com/charzl/Telegram-Media-Downloader/main/src/tel_download.js
@@ -30,6 +30,7 @@
   };
   const UI_MESSAGES = {
     en: {
+      queuePosition: "Queue position: {position}", queueBlocked: "Slots occupied by: {jobs}",
       restoring: "Restoring saved data", verifying: "Checking media source", waiting: "Waiting for media data",
       localProgress: "{received} / {total} processed", waitingHint: "No new data yet. Requests time out after 30 seconds and retry automatically.",
       restart: "Download again from start", restartHint: "Discard this task's saved parts and download again using the remembered address and save location.",
@@ -44,7 +45,7 @@
       errorBusy: "This download is active in another tab. Try again when it stops.", errorSourceChanged: "The media changed. Remove this task and start again to avoid a corrupt file.",
       downloads: "Downloads", downloadsCount: "Downloads ({count})", mediaDownloads: "Media downloads",
       download: "Download", loadingMedia: "Media is loading", hide: "Hide", show: "Show",
-      dismiss: "Dismiss download", progress: "Download progress", cancel: "Cancel", retry: "Retry",
+      dismiss: "Cancel and remove download", progress: "Download progress", pause: "Pause", retry: "Retry",
       settings: "Settings", language: "Interface language", automatic: "Browser language",
       preparing: "Preparing", queued: "Queued", downloading: "Downloading", saving: "Saving",
       completed: "Completed", handedOff: "Sent to browser", failed: "Failed", cancelled: "Cancelled",
@@ -61,6 +62,7 @@
       errorUnexpected: "Download failed: {message}",
     },
     "zh-CN": {
+      queuePosition: "排队位置：{position}", queueBlocked: "当前占用下载名额：{jobs}",
       restoring: "恢复已下载内容", verifying: "校验媒体来源", waiting: "等待媒体数据",
       localProgress: "已处理 {received} / {total}", waitingHint: "暂未收到新数据，请求将在 30 秒无响应后超时并自动重试。",
       restart: "从头重新下载", restartHint: "丢弃此任务已保存的分段，使用记住的地址和保存位置从头下载。",
@@ -75,7 +77,7 @@
       errorBusy: "另一个标签页正在处理此下载，请稍后重试。", errorSourceChanged: "媒体内容已改变，请移除此任务后重新下载，避免文件损坏。",
       downloads: "下载", downloadsCount: "下载（{count}）", mediaDownloads: "媒体下载",
       download: "下载", loadingMedia: "媒体正在加载", hide: "收起", show: "展开",
-      dismiss: "移除下载卡片", progress: "下载进度", cancel: "取消", retry: "重试",
+      dismiss: "取消并移除下载", progress: "下载进度", pause: "暂停", retry: "重试",
       settings: "设置", language: "界面语言", automatic: "跟随浏览器",
       preparing: "准备中", queued: "排队中", downloading: "下载中", saving: "保存中",
       completed: "已完成", handedOff: "已交给浏览器", failed: "失败", cancelled: "已取消",
@@ -92,6 +94,7 @@
       errorUnexpected: "下载失败：{message}",
     },
     "zh-TW": {
+      queuePosition: "排隊位置：{position}", queueBlocked: "目前佔用下載名額：{jobs}",
       restoring: "還原已下載內容", verifying: "檢查媒體來源", waiting: "等待媒體資料",
       localProgress: "已處理 {received} / {total}", waitingHint: "尚未收到新資料，請求將在 30 秒無回應後逾時並自動重試。",
       restart: "從頭重新下載", restartHint: "捨棄此任務已儲存的分段，使用記住的位址和儲存位置從頭下載。",
@@ -106,7 +109,7 @@
       errorBusy: "另一個分頁正在處理此下載，請稍後重試。", errorSourceChanged: "媒體內容已變更，請移除此工作後重新下載，避免檔案損壞。",
       downloads: "下載", downloadsCount: "下載（{count}）", mediaDownloads: "媒體下載",
       download: "下載", loadingMedia: "媒體正在載入", hide: "收合", show: "展開",
-      dismiss: "移除下載卡片", progress: "下載進度", cancel: "取消", retry: "重試",
+      dismiss: "取消並移除下載", progress: "下載進度", pause: "暫停", retry: "重試",
       settings: "設定", language: "介面語言", automatic: "跟隨瀏覽器",
       preparing: "準備中", queued: "排隊中", downloading: "下載中", saving: "儲存中",
       completed: "已完成", handedOff: "已交給瀏覽器", failed: "失敗", cancelled: "已取消",
@@ -123,6 +126,7 @@
       errorUnexpected: "下載失敗：{message}",
     },
     ru: {
+      queuePosition: "Место в очереди: {position}", queueBlocked: "Слоты заняты: {jobs}",
       restoring: "Восстановление сохранённых данных", verifying: "Проверка источника", waiting: "Ожидание данных",
       localProgress: "Обработано {received} / {total}", waitingHint: "Новых данных пока нет. Через 30 секунд без ответа запрос будет повторён автоматически.",
       restart: "Скачать заново", restartHint: "Удалить сохранённые части и скачать заново по сохранённому адресу в прежний файл.",
@@ -137,7 +141,7 @@
       errorBusy: "Загрузка выполняется в другой вкладке. Повторите позже.", errorSourceChanged: "Медиа изменилось. Удалите задачу и начните заново, чтобы избежать повреждения файла.",
       downloads: "Загрузки", downloadsCount: "Загрузки ({count})", mediaDownloads: "Загрузка медиа",
       download: "Скачать", loadingMedia: "Медиа загружается", hide: "Свернуть", show: "Развернуть",
-      dismiss: "Убрать карточку загрузки", progress: "Ход загрузки", cancel: "Отменить", retry: "Повторить",
+      dismiss: "Отменить и удалить загрузку", progress: "Ход загрузки", pause: "Приостановить", retry: "Повторить",
       settings: "Настройки", language: "Язык интерфейса", automatic: "Язык браузера",
       preparing: "Подготовка", queued: "В очереди", downloading: "Загрузка", saving: "Сохранение",
       completed: "Завершено", handedOff: "Передано браузеру", failed: "Ошибка", cancelled: "Отменено",
@@ -154,6 +158,7 @@
       errorUnexpected: "Не удалось скачать: {message}",
     },
     my: {
+      queuePosition: "တန်းစီနေရာ: {position}", queueBlocked: "လက်ရှိဒေါင်းလုဒ်များ: {jobs}",
       restoring: "သိမ်းထားသောဒေတာ ပြန်လည်ရယူနေသည်", verifying: "မီဒီယာရင်းမြစ် စစ်ဆေးနေသည်", waiting: "မီဒီယာဒေတာ စောင့်နေသည်",
       localProgress: "{received} / {total} ပြီးစီးသည်", waitingHint: "ဒေတာအသစ် မရသေးပါ။ စက္ကန့် ၃၀ မတုံ့ပြန်လျှင် အလိုအလျောက် ထပ်စမ်းမည်။",
       restart: "အစမှ ပြန်ဒေါင်းလုဒ်လုပ်ရန်", restartHint: "သိမ်းထားသောအပိုင်းများကို ဖယ်ပြီး မှတ်ထားသောလင့်ခ်နှင့် နေရာတွင် အစမှ ပြန်ဒေါင်းလုဒ်လုပ်မည်။",
@@ -168,7 +173,7 @@
       errorBusy: "ဤဒေါင်းလုဒ်ကို အခြားတဘ်တွင် လုပ်ဆောင်နေသည်။ နောက်မှ ထပ်စမ်းပါ။", errorSourceChanged: "မီဒီယာ ပြောင်းလဲသွားသည်။ ဖိုင်မပျက်စီးစေရန် ဤလုပ်ငန်းကို ဖယ်ရှားပြီး ပြန်စပါ။",
       downloads: "ဒေါင်းလုဒ်များ", downloadsCount: "ဒေါင်းလုဒ်များ ({count})", mediaDownloads: "မီဒီယာဒေါင်းလုဒ်များ",
       download: "ဒေါင်းလုဒ်လုပ်ရန်", loadingMedia: "မီဒီယာကို ဖွင့်နေသည်", hide: "ဖျောက်ရန်", show: "ပြရန်",
-      dismiss: "ဒေါင်းလုဒ်ကတ်ကို ဖယ်ရှားရန်", progress: "ဒေါင်းလုဒ်တိုးတက်မှု", cancel: "ပယ်ဖျက်ရန်", retry: "ထပ်စမ်းရန်",
+      dismiss: "ဒေါင်းလုဒ်ကို ပယ်ဖျက်ပြီး ဖယ်ရှားရန်", progress: "ဒေါင်းလုဒ်တိုးတက်မှု", pause: "ရပ်နားရန်", retry: "ထပ်စမ်းရန်",
       settings: "ဆက်တင်များ", language: "မျက်နှာပြင်ဘာသာစကား", automatic: "ဘရောက်ဇာဘာသာစကား",
       preparing: "ပြင်ဆင်နေသည်", queued: "စောင့်ဆိုင်းနေသည်", downloading: "ဒေါင်းလုဒ်လုပ်နေသည်", saving: "သိမ်းဆည်းနေသည်",
       completed: "ပြီးစီးပြီ", handedOff: "ဘရောက်ဇာသို့ လွှဲပေးပြီး", failed: "မအောင်မြင်ပါ", cancelled: "ပယ်ဖျက်ပြီး",
@@ -301,7 +306,8 @@
   const CACHE_BLOCK_SIZE = 1024 * 1024;
   const MEMORY_EXPORT_LIMIT = 8 * 1024 * 1024;
   const MAX_AUTO_RETRIES = 10;
-  const AUTO_RETRY_DELAY = 30000;
+  const AUTO_RETRY_BASE_DELAY = 1000;
+  const AUTO_RETRY_BACKOFF_LIMIT = 15000;
   const MAX_AUTO_RETRY_DELAY = 60000;
   const fetchMediaPart = async (url, offset, total, kind, options = {}) => {
     const controller = new AbortController();
@@ -464,7 +470,9 @@
       clearTimeout(timer);
       options.signal?.removeEventListener("abort", abort);
       if (reader) {
-        await reader.cancel().catch(() => {});
+        // Some transports never settle cancellation. Cleanup must not hold a
+        // queue slot after a probe has already obtained the bytes it needs.
+        reader.cancel().catch(() => {});
         reader.releaseLock();
       }
     }
@@ -735,7 +743,36 @@
     panel.querySelector(".tel-panel-title").textContent = activeDownloads.size
       ? t("downloadsCount", { count: integerFormat.format(activeDownloads.size) }) : t("downloads");
   };
+  const stopTask = async (task, pause = false) => {
+    if (task.finished || task.state === "saving") return;
+    if (task.cancelling) return task.promise;
+    task.cancelling = true;
+    task.pauseRequested = pause;
+    task.controller.abort(new DOMException("Download cancelled", "AbortError"));
+    renderTask(task);
+    if (task.running) return task.promise;
+    const queuedIndex = downloadQueue.indexOf(task);
+    if (queuedIndex !== -1) downloadQueue.splice(queuedIndex, 1);
+    refreshQueuedTasks();
+    try {
+      // A queued task may still be registering its durable record. Wait for
+      // that write before deleting, so it cannot resurrect the cancelled task.
+      await task.registration;
+      if (pause) {
+        if (!task.persisted) { await saveResumeRecord(task); task.persisted = true; }
+        finishTask(task, "paused");
+      } else {
+        if (task.persisted) await withResumeLock(task, () => deleteResumeRecord(task));
+        task.persisted = false;
+        finishTask(task, "cancelled");
+      }
+    } catch (error) { finishTask(task, "failed", error); }
+  };
   const dismissTask = async (task) => {
+    if (!task.finished) {
+      await stopTask(task);
+      if (!task.finished) return;
+    }
     if (task.finished && task.persisted) {
       try {
         await withResumeLock(task, () => deleteResumeRecord(task));
@@ -764,21 +801,9 @@
         <span class="tel-task-state" role="status" aria-live="polite"></span>
         <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div></div><p></p></div>
         <p class="tel-task-details"></p><p class="tel-task-error"></p><p class="tel-task-resume-hint"></p>
-        <div class="tel-task-actions"><button type="button" data-action="cancel"></button><button type="button" data-action="retry" hidden></button><button type="button" data-action="restart" hidden></button><button type="button" data-action="location" hidden></button></div>`;
+        <div class="tel-task-actions"><button type="button" data-action="pause"></button><button type="button" data-action="retry" hidden></button><button type="button" data-action="restart" hidden></button><button type="button" data-action="location" hidden></button></div>`;
       card.querySelector('[data-action="dismiss"]').onclick = () => dismissTask(task);
-      card.querySelector('[data-action="cancel"]').onclick = async () => {
-        if (task.finished || task.state === "saving") return;
-        task.controller.abort(new DOMException("Download cancelled", "AbortError"));
-        if (!task.running) {
-          task.cancelling = true;
-          try {
-            await task.registration;
-            if (task.persisted) await withResumeLock(task, () => deleteResumeRecord(task));
-            task.persisted = false;
-            finishTask(task, "cancelled");
-          } catch (error) { finishTask(task, "failed", error); }
-        }
-      };
+      card.querySelector('[data-action="pause"]').onclick = () => stopTask(task, true);
       card.querySelector('[data-action="retry"]').onclick = () => {
         if (task.persisted) { refreshTaskUrl(task); startTask(task); }
         else { dismissTask(task); downloadMedia(task.url, task.kind); }
@@ -790,7 +815,7 @@
     renderTask(task);
     return card;
   };
-  const renderTask = (task) => {
+  const renderTask = (task, refreshQueue = true) => {
     const card = document.getElementById("tel-downloader-progress-" + task.id);
     if (!card) return;
     const label = t(task.state, { attempt: task.retryAttempt, max: MAX_AUTO_RETRIES });
@@ -815,6 +840,9 @@
     progress.setAttribute("aria-valuetext", progressLabel);
     progress.querySelector("div").style.width = (percent ?? 0) + "%";
     progress.querySelector("p").textContent = progressLabel;
+    const queuePosition = downloadQueue.filter(queued => !queued.finished && !queued.cancelling).indexOf(task) + 1;
+    const blockers = Array.from(downloadTasks.values()).filter(active => active !== task && active.slotHeld && !active.finished)
+      .map(active => `${active.fileName} (${t(active.state === "queued" ? "preparing" : active.state)})`).join("; ");
     const speed = Math.max(0, task.received - (task.startedOffset || 0)) /
       Math.max((performance.now() - task.startedAt) / 1000, 0.1);
     card.querySelector(".tel-task-details").textContent =
@@ -822,7 +850,9 @@
         : formatBytes(task.received) + (task.total !== null ? ` / ${formatBytes(task.total)}` : "")) +
       (task.state === "downloading" && task.received ? ` · ${t("rate", { speed: formatBytes(speed) })}` : "") +
       (["waiting", "verifying"].includes(task.state) ? ` · ${t("waitingHint")}` : "") +
-      (task.state === "retrying" ? ` · ${t("retryWait", { seconds: Math.ceil(task.retryDelay / 1000) })}` : "");
+      (task.state === "retrying" ? ` · ${t("retryWait", { seconds: Math.ceil(task.retryDelay / 1000) })}` : "") +
+      (task.state === "queued" && queuePosition ? ` · ${t("queuePosition", { position: integerFormat.format(queuePosition) })}` : "") +
+      (task.state === "queued" && blockers ? ` · ${t("queueBlocked", { jobs: blockers })}` : "");
     const error = card.querySelector(".tel-task-error");
     error.textContent = formatDownloadError(task.error);
     error.hidden = !task.error;
@@ -831,13 +861,15 @@
     if (task.retryExhausted) hint.textContent += " " + t("retryExhausted");
     else if (task.error?.retryAfterMs > MAX_AUTO_RETRY_DELAY) hint.textContent += " " + t("retryLater");
     hint.hidden = !task.persisted || !["paused", "failed"].includes(task.state);
-    const cancel = card.querySelector('[data-action="cancel"]');
-    cancel.textContent = t("cancel");
-    cancel.hidden = task.finished;
-    cancel.disabled = task.state === "saving";
+    const pause = card.querySelector('[data-action="pause"]');
+    pause.textContent = t("pause");
+    pause.hidden = task.finished;
+    pause.disabled = task.state === "saving" || task.cancelling;
+    card.querySelector('[data-action="dismiss"]').disabled = task.state === "saving";
     const retry = card.querySelector('[data-action="retry"]');
-    retry.textContent = t(task.persisted && task.offset ? "resume" : "retry");
+    retry.textContent = t(task.persisted && (task.offset || task.state === "paused") ? "resume" : "retry");
     retry.hidden = !["paused", "failed", "cancelled"].includes(task.state);
+    retry.disabled = task.running;
     const restart = card.querySelector('[data-action="restart"]');
     restart.textContent = t("restart");
     restart.title = t("restartHint");
@@ -850,6 +882,7 @@
     task.renderedAt = performance.now();
     task.renderedBytes = task.received;
     updateTaskPanel();
+    if (refreshQueue && task.state !== "queued") refreshQueuedTasks();
   };
   const waitForRetry = (task, delay) => new Promise((resolve, reject) => {
     const signal = task.controller.signal;
@@ -875,7 +908,7 @@
       } catch (error) {
         if (task.controller.signal.aborted) throw task.controller.signal.reason;
         const retryable = error.retryable || ["errorTimeout", "errorIncomplete", "errorEmpty"].includes(error.translationKey);
-        const delay = Math.max(AUTO_RETRY_DELAY, error.retryAfterMs || 0);
+        const delay = Math.max(Math.min(AUTO_RETRY_BASE_DELAY * 2 ** attempt, AUTO_RETRY_BACKOFF_LIMIT), error.retryAfterMs || 0);
         if (!retryable || attempt >= MAX_AUTO_RETRIES || delay > MAX_AUTO_RETRY_DELAY) {
           task.retryExhausted = Boolean(retryable && attempt >= MAX_AUTO_RETRIES);
           throw error;
@@ -888,7 +921,11 @@
           retryAttempt: attempt + 1, retryDelay: delay, error });
         logger.info(`Retry ${attempt + 1}/${MAX_AUTO_RETRIES} after ${delay}ms: ${error.message}`, task.fileName);
         renderTask(task);
+        // Retry delays must not occupy a transfer slot. Healthy queued files
+        // get their turn, and this retry joins the tail before requesting again.
+        releaseDownloadSlot(task);
         await waitForRetry(task, delay);
+        await acquireDownloadSlot(task);
         Object.assign(task, { state: requestState, error: null, startedAt: performance.now(), startedOffset: task.offset });
         renderTask(task);
       }
@@ -1014,9 +1051,11 @@
       }
       task.received = task.offset;
       if (task.controller.signal.aborted || error.name === "AbortError") {
-        try { await deleteResumeRecord(task); task.persisted = false; }
-        catch (storageError) { finishTask(task, "failed", storageError); return; }
-        finishTask(task, "cancelled");
+        try {
+          if (task.pauseRequested) await discardUncommittedChunks(task);
+          else { await deleteResumeRecord(task); task.persisted = false; }
+        } catch (storageError) { finishTask(task, "failed", storageError); return; }
+        finishTask(task, task.pauseRequested ? "paused" : "cancelled");
       } else {
         try { await discardUncommittedChunks(task); } catch { /* Retried on resume. */ }
         finishTask(task, "failed", error);
@@ -1025,21 +1064,53 @@
       task.handle = null;
     }
   };
+  const refreshQueuedTasks = () => {
+    for (const queued of downloadQueue) if (!queued.finished && !queued.cancelling) renderTask(queued, false);
+  };
+  const releaseDownloadSlot = task => {
+    if (!task.slotHeld) return;
+    task.slotHeld = false;
+    runningDownloads--;
+    pumpDownloads();
+  };
+  const acquireDownloadSlot = task => new Promise((resolve, reject) => {
+    const signal = task.controller.signal;
+    const abort = () => {
+      task.resumeSlot = null;
+      const index = downloadQueue.indexOf(task);
+      if (index !== -1) downloadQueue.splice(index, 1);
+      refreshQueuedTasks();
+      reject(signal.reason);
+    };
+    if (signal.aborted) { abort(); return; }
+    signal.addEventListener("abort", abort, { once: true });
+    task.resumeSlot = () => {
+      task.resumeSlot = null;
+      signal.removeEventListener("abort", abort);
+      resolve();
+    };
+    task.state = "queued";
+    renderTask(task);
+    downloadQueue.push(task);
+    pumpDownloads();
+  });
   const pumpDownloads = () => {
     while (runningDownloads < MAX_CONCURRENT_DOWNLOADS && downloadQueue.length) {
       const task = downloadQueue.shift();
       if (task.finished || task.cancelling) continue;
       runningDownloads++;
+      task.slotHeld = true;
+      if (task.resumeSlot) { task.resumeSlot(); continue; }
       task.running = true;
       withResumeLock(task, () => runTask(task)).catch(error => {
         finishTask(task, "failed", error);
       }).finally(() => {
         task.running = false;
-        if (task.finished) task.resolve?.(task.result);
-        runningDownloads--;
-        pumpDownloads();
+        if (task.finished) { renderTask(task); task.resolve?.(task.result); }
+        releaseDownloadSlot(task);
       });
     }
+    refreshQueuedTasks();
   };
   const downloadMedia = (url, kind) => {
     if (typeof url !== "string" || !url) return Promise.resolve();
@@ -1083,18 +1154,19 @@
     if (task.running) return task.promise;
     if (activeDownloads.has(task.key)) return activeDownloads.get(task.key).promise;
     Object.assign(task, {
-      state: "preparing", received: task.offset, controller: new AbortController(), error: null, cancelling: false,
+      state: "preparing", received: task.offset, controller: new AbortController(), error: null, cancelling: false, pauseRequested: false,
       reusingDestination: false, registration: null,
       retryAttempt: 0, retryDelay: 0, retryExhausted: false,
       localReceived: 0, localTotal: 0,
       startedAt: performance.now(), renderedAt: 0, finished: false,
     });
+    const runController = task.controller;
     task.promise = new Promise(resolve => { task.resolve = resolve; });
     activeDownloads.set(task.key, task);
     showTask(task);
     navigator.storage?.persist?.().catch(() => {});
     const enqueue = async (handle) => {
-      if (task.finished) return;
+      if (task.controller !== runController || task.finished || task.cancelling || runController.signal.aborted) return;
       task.handle = handle;
       task.fileHandle = handle || undefined;
       task.preferredName = handle?.name || task.preferredName;
@@ -1137,8 +1209,10 @@
       };
       // Called directly by Resume's click handler so requestPermission can use
       // the user gesture. A permission prompt does not select a new destination.
-      authorize().catch(error => finishTask(task, "paused",
-        error.translationKey ? error : downloadError("errorFilePermission")));
+      authorize().catch(error => {
+        if (task.controller === runController && !task.cancelling) finishTask(task, "paused",
+          error.translationKey ? error : downloadError("errorFilePermission"));
+      });
       return task.promise;
     }
     try {
@@ -1148,6 +1222,7 @@
         // Keep the picker inside the original click, before queueing or fetching.
         Promise.resolve(pageWindow.showSaveFilePicker({ suggestedName: task.fileName }))
           .then(enqueue, (error) => {
+            if (task.controller !== runController || task.cancelling) return;
             if (error.name === "AbortError") finishTask(task, task.persisted ? "paused" : "cancelled");
             else enqueue(null);
           });

@@ -80,7 +80,7 @@ Only complete, validated responses count as checkpoints. Range requests ask for 
 
 ### Automatic retries
 
-An active transfer retries a failed request up to **ten times**, normally waiting **30 seconds** between attempts (eleven attempts including the initial request). This applies to network/read failures, inactivity timeouts, incomplete or empty responses, HTTP 408/429, and HTTP 5xx. Each successfully validated response resets the budget. The panel shows the attempt number and wait time; **Cancel** also cancels a pending retry. Resume overlap checks use the same bounded retry policy.
+An active transfer retries a failed request up to **ten times**, after **1, 2, 4, and 8 seconds**, then **15 seconds** for subsequent attempts (eleven attempts including the initial request). This applies to network/read failures, inactivity timeouts, incomplete or empty responses, HTTP 408/429, and HTTP 5xx. Each successfully validated response resets the budget. Retry waits release the transfer slot so queued files can proceed. When ready, retries join the back of the queue and reacquire a slot before fetching. The panel shows the attempt number and wait time; **Pause** preserves the checkpoint and stops a pending retry; **×** cancels and removes the task. Resume overlap checks use the same bounded retry policy.
 
 Retries keep completed parts. Before repeating an interrupted response, uncommitted cache blocks are removed and any partial file writes are truncated back to the saved offset. A browser file writer that cannot rewind safely stops instead of appending duplicate bytes. No save picker is reopened for an automatic retry.
 
@@ -88,7 +88,7 @@ Permission and disk errors, expired/forbidden URLs, changed media, and invalid r
 
 Resume requires a source that still supports partial responses. A complete HTTP 200 response can be saved, but an interrupted non-range response must start again. Incomplete `blob:` URLs cannot survive a browser restart; fully cached media can still be saved without contacting the source.
 
-Cached media occupies browser storage in addition to any destination file. The script requests persistent storage, but browser approval and available disk space determine whether it can be retained. Storage failures stop the task with an error while preserving earlier committed parts. Private browsing, clearing Telegram's site data, changing profiles/domains, or browser storage eviction can remove the cache. **Cancel** and removing an inactive task discard its saved parts; hiding a running card keeps its task. Successfully saved or handed-off downloads release their resume cache. Browser-download exports use temporary private disk files; those files remain available to the download manager and are cleaned up on a later visit once over 24 hours old. Unfinished resume tasks are never removed by this age-based export cleanup.
+Cached media occupies browser storage in addition to any destination file. The script requests persistent storage, but browser approval and available disk space determine whether it can be retained. Storage failures stop the task with an error while preserving earlier committed parts. Private browsing, clearing Telegram's site data, changing profiles/domains, or browser storage eviction can remove the cache. **×** discards the task's saved parts; **Pause** keeps its validated checkpoint; **Hide** only collapses the panel and keeps its tasks running. Successfully saved or handed-off downloads release their resume cache. Browser-download exports use temporary private disk files; those files remain available to the download manager and are cleaned up on a later visit once over 24 hours old. Unfinished resume tasks are never removed by this age-based export cleanup.
 
 ### Supported Webapp Versions
 There are 2 different versions of telegram webapps:
@@ -98,10 +98,11 @@ There are 2 different versions of telegram webapps:
 This script should work on both versions of webapp, but some features are only available in the /k/ version (such as voice message downloads). If certain features are not working, switching to the /k/ version is recommended.
 
 ### Check Downloading Progress
-The task panel shows the filename, received size, and download speed. When the total size is known, it also shows a percentage. Up to two files download at once; additional files wait in the queue. Clicking the same media again focuses its active task.
+The task panel shows the filename, received size, and download speed. When the total size is known, it also shows a percentage. Up to two files download at once; additional files wait in the queue. Queued cards show their position and the filenames and states of the tasks currently occupying transfer slots. Clicking the same media again focuses its active task.
 
-- **Hide** collapses the panel. **×** hides a running task card without stopping it; removing an inactive task also deletes its saved parts.
-- **Cancel** stops a queued or active download and discards both unfinished file writes and saved parts. Cancellation is disabled while the completed file is being committed.
+- **Hide** collapses the panel while downloads continue.
+- **Pause** stops a queued or active transfer and pending retries, releases its download slot, and keeps validated parts. **Resume** continues from the saved checkpoint, including after reopening the browser. A renewed media address may be needed after a link expires.
+- **×** stops and removes the task, its database record, and saved parts after pending writes settle. Pause and removal are disabled while the completed file is being committed.
 - **Resume** continues an interrupted task from its last saved response. **Retry** starts again if there are no saved bytes. If the media URL has expired, reopen the media and use its download button again.
 - **Download again from start** restarts an inactive saved task from byte zero and discards its saved parts. It keeps the remembered address and destination; **Change save location** chooses a different destination for continuation.
 - **Completed** means direct file saving succeeded. **Sent to browser** means the file was handed to the browser's download manager; check that manager for the final save result.

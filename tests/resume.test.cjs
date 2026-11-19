@@ -218,13 +218,13 @@ test('fully cached media can be saved after a restart without fetching the sourc
   });
 });
 
-test('cancelling an active download discards committed chunks', async () => {
+test('removing an active download discards committed chunks', async () => {
   context = await browser.newContext();
   const page = await openPage(browser, '', '/k/', { context });
   await interruptedDownload(page);
-  await page.locator('[data-action="cancel"]').click();
+  await page.evaluate(() => document.querySelector('[data-action="dismiss"]').onclick());
   await page.evaluate(() => done);
-  assert.equal(await page.locator('.tel-task').getAttribute('data-state'), 'cancelled');
+  assert.equal(await page.locator('.tel-task').count(), 0);
   assert.deepEqual(await inspectCache(page), { offsets: [], chunks: [] });
 });
 
@@ -293,4 +293,124 @@ test('a changed strong ETag prevents continuation even when the overlap bytes ma
   await second.waitForFunction(() => document.querySelector('.tel-task').dataset.state === 'failed');
   assert.match(await second.locator('.tel-task-error').textContent(), /media changed/);
   assert.deepEqual(await second.evaluate(() => ({ requests, saved: saved.length })), { requests: ['"original"'], saved: 0 });
+});
+
+for (const action of ['dismiss']) {
+  test(`${action} deletes active task data and reopening the page cannot restore it`, async () => {
+    context = await browser.newContext();
+    const first = await openPage(browser, '', '/k/', { context });
+    await interruptedDownload(first);
+    assert.deepEqual((await inspectCache(first)).offsets, [3]);
+    await first.evaluate(action => document.querySelector(`[data-action="${action}"]`).onclick(), action);
+    await first.evaluate(() => done);
+    assert.deepEqual(await inspectCache(first), { offsets: [], chunks: [] });
+    assert.equal(await first.locator('.tel-task').count(), action === 'dismiss' ? 0 : 1);
+    await first.close();
+    const second = await openPage(browser, '', '/k/', { context });
+    assert.equal(await second.locator('.tel-task').count(), 0);
+    assert.deepEqual(await inspectCache(second), { offsets: [], chunks: [] });
+    assert.deepEqual(await second.evaluate(() => requests), []);
+  });
+
+  test(`${action} waits for pending registration before deleting the record`, async () => {
+    context = await browser.newContext();
+    const page = await openPage(browser, '', '/k/', { context });
+    await page.evaluate(() => {
+      const descriptor = Object.getOwnPropertyDescriptor(IDBTransaction.prototype, 'oncomplete');
+      let hold = true;
+      Object.defineProperty(IDBTransaction.prototype, 'oncomplete', {
+        ...descriptor,
+        set(callback) {
+          if (hold && this.mode === 'readwrite' && this.objectStoreNames.contains('tasks')) {
+            hold = false;
+            descriptor.set.call(this, event => { window.releaseRegistration = () => callback.call(this, event); });
+          } else descriptor.set.call(this, callback);
+        },
+      });
+      window.done = downloads.video('https://test.invalid/pending.mp4');
+    });
+    await page.waitForFunction(() => typeof releaseRegistration === 'function');
+    await page.evaluate(action => { window.removal = document.querySelector(`[data-action="${action}"]`).onclick(); }, action);
+    await page.evaluate(async () => { releaseRegistration(); await removal; await done; });
+    assert.deepEqual(await inspectCache(page), { offsets: [], chunks: [] });
+    assert.deepEqual(await page.evaluate(() => requests), []);
+    await page.close();
+    const reopened = await openPage(browser, '', '/k/', { context });
+    assert.equal(await reopened.locator('.tel-task').count(), 0);
+  });
+}
+
+test('removing a task before its picker resolves prevents late database registration', async () => {
+  context = await browser.newContext();
+  const page = await openPage(browser, '', '/k/', { context });
+  await page.evaluate(async () => {
+    showSaveFilePicker = () => new Promise(resolve => { window.finishPicker = resolve; });
+    window.done = downloads.video('https://test.invalid/picker.mp4');
+    await document.querySelector('[data-action="dismiss"]').onclick();
+    finishPicker(null);
+    await done;
+    await settle();
+  });
+  assert.deepEqual(await inspectCache(page), { offsets: [], chunks: [] });
+  assert.equal(await page.locator('.tel-task').count(), 0);
+  assert.deepEqual(await page.evaluate(() => requests), []);
+});
+
+test('Pause retains committed data, survives reopening, and Resume continues from its checkpoint', async () => {
+  context = await browser.newContext();
+  const first = await openPage(browser, '', '/k/', { context });
+  await interruptedDownload(first);
+  assert.equal(await first.locator('[data-action="cancel"]').count(), 0);
+  await first.evaluate(() => document.querySelector('[data-action="pause"]').onclick());
+  assert.equal(await first.locator('.tel-task').getAttribute('data-state'), 'paused');
+  assert.deepEqual(await inspectCache(first), { offsets: [3], chunks: [{ offset: 0, size: 3 }] });
+  assert.equal(await first.locator('[data-action="retry"]').textContent(), 'Resume');
+  await first.close();
+  const second = await openPage(browser, '', '/k/', { context });
+  assert.equal(await second.locator('.tel-task').getAttribute('data-state'), 'paused');
+  await finishResumedDownload(second);
+  assert.equal(await second.evaluate(() => blobs[0].text()), 'abcdefghi');
+  assert.deepEqual(await second.evaluate(() => requests), ['bytes=0-2', 'bytes=3-4194306', 'bytes=6-4194309']);
+  assert.deepEqual(await inspectCache(second), { offsets: [], chunks: [] });
+});
+
+test('Pause during retry backoff preserves the task and Resume can finish it', async () => {
+  context = await browser.newContext();
+  const page = await openPage(browser, '', '/k/', { context });
+  await page.evaluate(() => {
+    accelerateRetries = false;
+    fetch = async () => { requests.push('failed'); throw new TypeError('Offline'); };
+    window.done = downloads.video('https://test.invalid/retry.mp4');
+  });
+  await page.waitForSelector('[data-state="retrying"]');
+  await page.evaluate(() => document.querySelector('[data-action="pause"]').onclick());
+  assert.deepEqual((await inspectCache(page)).offsets, [0]);
+  assert.equal(await page.locator('.tel-task').getAttribute('data-state'), 'paused');
+  await page.evaluate(() => {
+    fetch = async () => { requests.push('resumed'); return response('video/mp4', 'bytes 0-2/3'); };
+    document.querySelector('[data-action="retry"]').click();
+  });
+  await page.waitForSelector('[data-state="handedOff"]');
+  assert.deepEqual(await page.evaluate(() => requests), ['failed', 'resumed']);
+  assert.deepEqual(await inspectCache(page), { offsets: [], chunks: [] });
+});
+
+test('Pause then Resume ignores a late picker result from the previous run', async () => {
+  context = await browser.newContext();
+  const page = await openPage(browser, '', '/k/', { context });
+  await page.evaluate(async () => {
+    showSaveFilePicker = () => new Promise(resolve => { window.oldPicker = resolve; });
+    downloads.video('https://test.invalid/picker.mp4');
+    await document.querySelector('[data-action="pause"]').onclick();
+  });
+  assert.equal(await page.locator('.tel-task').getAttribute('data-state'), 'paused');
+  await page.evaluate(() => {
+    delete window.showSaveFilePicker;
+    document.querySelector('[data-action="retry"]').click();
+    oldPicker(null);
+  });
+  await page.waitForSelector('[data-state="handedOff"]');
+  assert.deepEqual(await page.evaluate(() => ({ requests: requests.length, saved: saved.length, errors })),
+    { requests: 1, saved: 1, errors: [] });
+  assert.deepEqual(await inspectCache(page), { offsets: [], chunks: [] });
 });

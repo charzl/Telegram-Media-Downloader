@@ -180,3 +180,22 @@ test('start-over cannot delete a checkpoint owned by another tab', async () => {
   assert.equal(await page.evaluate(() => requests.length), 0);
   await page.evaluate(async () => { releaseOwner(); await owner; });
 });
+
+test('resume verification does not wait for transport cancellation to finish', async () => {
+  const page = await restoredPage();
+  await page.evaluate(() => {
+    fetch = async (url, options) => {
+      requests.push(options.headers.Range);
+      if (requests.length === 1) return new Response(new ReadableStream({
+        start(controller) { controller.enqueue(new TextEncoder().encode('def')); },
+        cancel() { return new Promise(() => {}); },
+      }), { status: 206, headers: { 'Content-Type': 'video/mp4', 'Content-Range': 'bytes 3-5/9' } });
+      return response('video/mp4', 'bytes 6-8/9', 'ghi');
+    };
+    document.querySelector('[data-action="retry"]').click();
+  });
+  await page.waitForFunction(() => document.querySelector('.tel-task').dataset.state === 'completed', null, { timeout: 5000 });
+  assert.deepEqual(await page.evaluate(async () => ({ requests, errors,
+    body: await (await (await (await navigator.storage.getDirectory()).getFileHandle('original.mp4')).getFile()).text() })),
+  { requests: ['bytes=3-5', 'bytes=6-4194309'], errors: [], body: 'abcdefghi' });
+});
