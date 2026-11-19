@@ -125,6 +125,7 @@ test('unvalidated staged blocks are discarded after closing the page and before 
   await second.evaluate(guardBuffers);
   await second.evaluate(() => {
     fetch = async (url, options) => {
+      requests.push(options.headers.Range);
       if (options.headers.Range === 'bytes=0-2') return new Promise(resolve => { window.probe = resolve; });
       return new Response(mediaBody(6 * 1024 * 1024), { status: 206,
         headers: { 'Content-Type': 'video/mp4', 'Content-Range': 'bytes 3-6291458/6291459' } });
@@ -133,7 +134,7 @@ test('unvalidated staged blocks are discarded after closing the page and before 
   });
   await second.waitForFunction(() => typeof probe === 'function' || document.querySelector('.tel-task')?.dataset.state === 'failed');
   assert.equal(await second.locator('.tel-task').getAttribute('data-state'), 'verifying',
-    await second.locator('.tel-task-error').textContent());
+    JSON.stringify({ error: await second.locator('.tel-task-error').textContent(), requests: await second.evaluate(() => requests), cache: await second.evaluate(cache) }));
   assert.deepEqual(await second.evaluate(cache), { offset: 3, chunks: [0] });
   await second.evaluate(() => probe(response('video/mp4', 'bytes 0-2/6291459', 'abc')));
   await second.waitForFunction(() => document.querySelector('.tel-task').dataset.state === 'handedOff');
