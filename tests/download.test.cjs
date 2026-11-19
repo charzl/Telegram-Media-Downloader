@@ -84,27 +84,6 @@ test('disk completion waits for write and close', async () => {
   assert.deepEqual(result.errors, []);
 });
 
-test('dismissing progress does not cancel a download or break error handling', async () => {
-  for (const fail of [false, true]) {
-    page = await openPage(browser);
-    const result = await page.evaluate(async fail => {
-      let respond, calls = 0;
-      fetch = () => ++calls === 1 ? new Promise(resolve => { respond = resolve; })
-        : Promise.resolve(response('video/mp4', null, 'error', 403));
-      const done = downloads.video('https://test.invalid/video');
-      document.querySelector('[data-action="dismiss"]').click();
-      await waitUntil(() => typeof respond === 'function');
-      respond(response('video/mp4', fail ? null : 'bytes 0-2/3', 'abc', fail ? 403 : 206));
-      await done;
-      return { saved: saved.length, errors };
-    }, fail);
-    assert.equal(result.saved, fail ? 0 : 1);
-    assert.equal(result.errors.length, fail ? 1 : 0);
-    assert.ok(result.errors.every(error => !error.includes('null')));
-    await page.close();
-  }
-});
-
 test('complete HTTP 200 responses work for video and audio', async () => {
   for (const kind of ['video', 'audio']) {
     page = await openPage(browser);

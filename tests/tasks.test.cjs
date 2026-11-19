@@ -7,13 +7,12 @@ before(async () => { browser = await launch(); });
 after(async () => { await browser?.close(); });
 afterEach(async () => { await page?.close(); });
 
-test('duplicate clicks share one download and can restore a dismissed card', async () => {
+test('duplicate clicks share one active download', async () => {
   page = await openPage(browser);
   const result = await page.evaluate(async () => {
     let respond, calls = 0;
     fetch = () => { calls++; return new Promise(resolve => { respond = resolve; }); };
     const first = downloads.video('https://test.invalid/video');
-    document.querySelector('[data-action="dismiss"]').click();
     const second = downloads.video('https://test.invalid/video');
     const cards = document.querySelectorAll('.tel-task').length;
     await waitUntil(() => typeof respond === 'function');
@@ -120,4 +119,106 @@ test('unknown totals show indeterminate progress and hiding the panel keeps down
   assert.equal(result.saved, 1);
   assert.equal(result.state, 'handedOff');
   assert.deepEqual(result.errors, []);
+});
+
+test('retry waits release slots to queued files and retries reacquire slots before fetching', async () => {
+  page = await openPage(browser);
+  const result = await page.evaluate(async () => {
+    accelerateRetries = false;
+    const timeout = window.setTimeout;
+    const retries = [];
+    window.setTimeout = (callback, delay, ...args) => {
+      if (String(callback).includes('signal.removeEventListener("abort", abort); resolve();')) {
+        retries.push(() => callback(...args));
+        return 0;
+      }
+      return timeout(callback, delay, ...args);
+    };
+    const attempts = {}, responders = {};
+    fetch = async url => {
+      requests.push(url);
+      attempts[url] = (attempts[url] || 0) + 1;
+      if (/[12]\.mp4$/.test(url) && attempts[url] === 1) throw new TypeError('Offline');
+      if (/[34]\.mp4$/.test(url)) return new Promise(resolve => { responders[url] = resolve; });
+      return response('video/mp4', 'bytes 0-2/3');
+    };
+    const done = [1, 2, 3, 4].map(id => downloads.video(`https://test.invalid/${id}.mp4`));
+    await waitUntil(() => Object.keys(responders).length === 2 && retries.length === 2);
+    retries.forEach(retry => retry());
+    await waitUntil(() => document.querySelectorAll('[data-state="queued"]').length === 2);
+    // The retries cannot fetch while both healthy transfers hold their slots.
+    const beforeRelease = requests.map(url => url.split('/').pop());
+    Object.values(responders).forEach(resolve => resolve(response('video/mp4', 'bytes 0-2/3')));
+    await Promise.all(done);
+    return { beforeRelease, counts: Object.values(attempts).sort(), saved: saved.length, errors };
+  });
+  assert.deepEqual(result, { beforeRelease: ['1.mp4', '2.mp4', '3.mp4', '4.mp4'],
+    counts: [1, 1, 2, 2], saved: 4, errors: [] });
+});
+
+
+test('queued cards identify slot owners and update after an owner is cancelled', async () => {
+  page = await openPage(browser);
+  const result = await page.evaluate(async () => {
+    const responders = {};
+    fetch = (url, options) => new Promise((resolve, reject) => {
+      responders[url] = resolve;
+      options.signal.addEventListener('abort', () => reject(options.signal.reason), { once: true });
+    });
+    const done = [1, 2, 3, 4].map(id => downloads.video(`https://test.invalid/${id}.mp4`));
+    const card = id => [...document.querySelectorAll('.tel-task')].find(el => el.querySelector('.filename').textContent === `${id}.mp4`);
+    await waitUntil(() => Object.keys(responders).length === 2 && card(4)?.dataset.state === 'queued');
+    const initial = card(4).querySelector('.tel-task-details').textContent;
+    card(2).querySelector('[data-action="cancel"]').click();
+    await waitUntil(() => responders['https://test.invalid/3.mp4'] && card(3).dataset.state === 'downloading');
+    const updated = card(4).querySelector('.tel-task-details').textContent;
+    for (const id of [1, 3]) responders[`https://test.invalid/${id}.mp4`](response('video/mp4', 'bytes 0-2/3'));
+    await waitUntil(() => responders['https://test.invalid/4.mp4']);
+    responders['https://test.invalid/4.mp4'](response('video/mp4', 'bytes 0-2/3'));
+    await Promise.all(done);
+    return { initial, updated, saved: saved.length, errors };
+  });
+  assert.match(result.initial, /Queue position: 2/);
+  assert.match(result.initial, /Slots occupied by:.*1\.mp4.*2\.mp4/);
+  assert.match(result.updated, /Queue position: 1/);
+  assert.match(result.updated, /Slots occupied by:.*1\.mp4.*3\.mp4/);
+  assert.doesNotMatch(result.updated, /2\.mp4/);
+  assert.equal(result.saved, 3);
+  assert.deepEqual(result.errors, []);
+});
+
+test('a retry queued behind active downloads can be cancelled without leaking a slot', async () => {
+  page = await openPage(browser);
+  const result = await page.evaluate(async () => {
+    accelerateRetries = false;
+    const timeout = window.setTimeout;
+    let retry;
+    window.setTimeout = (callback, delay, ...args) => {
+      if (String(callback).includes('signal.removeEventListener("abort", abort); resolve();')) {
+        retry = () => callback(...args); return 0;
+      }
+      return timeout(callback, delay, ...args);
+    };
+    const responders = {};
+    fetch = async url => {
+      requests.push(url);
+      if (url.endsWith('/1.mp4')) throw new TypeError('Offline');
+      return new Promise(resolve => { responders[url] = resolve; });
+    };
+    const done = [1, 2, 3].map(id => downloads.video(`https://test.invalid/${id}.mp4`));
+    await waitUntil(() => retry && Object.keys(responders).length === 2);
+    retry();
+    const first = [...document.querySelectorAll('.tel-task')].find(el => el.querySelector('.filename').textContent === '1.mp4');
+    await waitUntil(() => first.dataset.state === 'queued');
+    first.querySelector('[data-action="cancel"]').click();
+    Object.values(responders).forEach(resolve => resolve(response('video/mp4', 'bytes 0-2/3')));
+    await Promise.all(done);
+    const extra = downloads.video('https://test.invalid/4.mp4');
+    await waitUntil(() => responders['https://test.invalid/4.mp4']);
+    responders['https://test.invalid/4.mp4'](response('video/mp4', 'bytes 0-2/3'));
+    await extra;
+    return { cancelled: first.dataset.state, firstRequests: requests.filter(url => url.endsWith('/1.mp4')).length,
+      saved: saved.length, errors };
+  });
+  assert.deepEqual(result, { cancelled: 'cancelled', firstRequests: 1, saved: 3, errors: [] });
 });

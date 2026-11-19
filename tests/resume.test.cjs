@@ -294,3 +294,64 @@ test('a changed strong ETag prevents continuation even when the overlap bytes ma
   assert.match(await second.locator('.tel-task-error').textContent(), /media changed/);
   assert.deepEqual(await second.evaluate(() => ({ requests, saved: saved.length })), { requests: ['"original"'], saved: 0 });
 });
+
+for (const action of ['cancel', 'dismiss']) {
+  test(`${action} deletes active task data and reopening the page cannot restore it`, async () => {
+    context = await browser.newContext();
+    const first = await openPage(browser, '', '/k/', { context });
+    await interruptedDownload(first);
+    assert.deepEqual((await inspectCache(first)).offsets, [3]);
+    await first.evaluate(action => document.querySelector(`[data-action="${action}"]`).onclick(), action);
+    await first.evaluate(() => done);
+    assert.deepEqual(await inspectCache(first), { offsets: [], chunks: [] });
+    assert.equal(await first.locator('.tel-task').count(), action === 'dismiss' ? 0 : 1);
+    await first.close();
+    const second = await openPage(browser, '', '/k/', { context });
+    assert.equal(await second.locator('.tel-task').count(), 0);
+    assert.deepEqual(await inspectCache(second), { offsets: [], chunks: [] });
+    assert.deepEqual(await second.evaluate(() => requests), []);
+  });
+
+  test(`${action} waits for pending registration before deleting the record`, async () => {
+    context = await browser.newContext();
+    const page = await openPage(browser, '', '/k/', { context });
+    await page.evaluate(() => {
+      const descriptor = Object.getOwnPropertyDescriptor(IDBTransaction.prototype, 'oncomplete');
+      let hold = true;
+      Object.defineProperty(IDBTransaction.prototype, 'oncomplete', {
+        ...descriptor,
+        set(callback) {
+          if (hold && this.mode === 'readwrite' && this.objectStoreNames.contains('tasks')) {
+            hold = false;
+            descriptor.set.call(this, event => { window.releaseRegistration = () => callback.call(this, event); });
+          } else descriptor.set.call(this, callback);
+        },
+      });
+      window.done = downloads.video('https://test.invalid/pending.mp4');
+    });
+    await page.waitForFunction(() => typeof releaseRegistration === 'function');
+    await page.evaluate(action => { window.removal = document.querySelector(`[data-action="${action}"]`).onclick(); }, action);
+    await page.evaluate(async () => { releaseRegistration(); await removal; await done; });
+    assert.deepEqual(await inspectCache(page), { offsets: [], chunks: [] });
+    assert.deepEqual(await page.evaluate(() => requests), []);
+    await page.close();
+    const reopened = await openPage(browser, '', '/k/', { context });
+    assert.equal(await reopened.locator('.tel-task').count(), 0);
+  });
+}
+
+test('removing a task before its picker resolves prevents late database registration', async () => {
+  context = await browser.newContext();
+  const page = await openPage(browser, '', '/k/', { context });
+  await page.evaluate(async () => {
+    showSaveFilePicker = () => new Promise(resolve => { window.finishPicker = resolve; });
+    window.done = downloads.video('https://test.invalid/picker.mp4');
+    await document.querySelector('[data-action="dismiss"]').onclick();
+    finishPicker(null);
+    await done;
+    await settle();
+  });
+  assert.deepEqual(await inspectCache(page), { offsets: [], chunks: [] });
+  assert.equal(await page.locator('.tel-task').count(), 0);
+  assert.deepEqual(await page.evaluate(() => requests), []);
+});

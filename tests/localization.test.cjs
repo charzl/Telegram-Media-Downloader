@@ -136,7 +136,7 @@ test('switching language during a download updates controls without restarting o
   assert.equal(await page.locator('.progress').getAttribute('aria-label'), 'Ход загрузки');
   assert.equal(await page.locator('.progress').getAttribute('aria-valuenow'), '25');
   assert.equal(await page.locator('[data-action="cancel"]').textContent(), 'Отменить');
-  assert.equal(await page.locator('[data-action="dismiss"]').getAttribute('aria-label'), 'Убрать карточку загрузки');
+  assert.equal(await page.locator('[data-action="dismiss"]').getAttribute('aria-label'), 'Отменить и удалить загрузку');
   assert.match(await page.locator('.tel-task-details').textContent(), /1,0 KB \/ 4,0 KB.*\/с/);
   assert.equal(await page.locator('.tel-download').getAttribute('aria-label'), 'Скачать');
   await page.evaluate(async () => { stream.enqueue(new Uint8Array(3072)); stream.close(); await done; });
