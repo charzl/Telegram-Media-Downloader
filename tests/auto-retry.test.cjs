@@ -129,7 +129,7 @@ test('cancelling during retry wait prevents another request', async () => {
     window.done = downloads.video('https://test.invalid/video');
   });
   await page.waitForSelector('[data-state="retrying"]');
-  await page.locator('[data-action="cancel"]').click();
+  await page.locator('[data-action="dismiss"]').click();
   const result = await page.evaluate(async () => {
     const task = await done;
     await new Promise(resolve => setTimeout(resolve, 1100));

@@ -45,7 +45,7 @@
       errorBusy: "This download is active in another tab. Try again when it stops.", errorSourceChanged: "The media changed. Remove this task and start again to avoid a corrupt file.",
       downloads: "Downloads", downloadsCount: "Downloads ({count})", mediaDownloads: "Media downloads",
       download: "Download", loadingMedia: "Media is loading", hide: "Hide", show: "Show",
-      dismiss: "Cancel and remove download", progress: "Download progress", cancel: "Cancel", retry: "Retry",
+      dismiss: "Cancel and remove download", progress: "Download progress", pause: "Pause", retry: "Retry",
       settings: "Settings", language: "Interface language", automatic: "Browser language",
       preparing: "Preparing", queued: "Queued", downloading: "Downloading", saving: "Saving",
       completed: "Completed", handedOff: "Sent to browser", failed: "Failed", cancelled: "Cancelled",
@@ -77,7 +77,7 @@
       errorBusy: "另一个标签页正在处理此下载，请稍后重试。", errorSourceChanged: "媒体内容已改变，请移除此任务后重新下载，避免文件损坏。",
       downloads: "下载", downloadsCount: "下载（{count}）", mediaDownloads: "媒体下载",
       download: "下载", loadingMedia: "媒体正在加载", hide: "收起", show: "展开",
-      dismiss: "取消并移除下载", progress: "下载进度", cancel: "取消", retry: "重试",
+      dismiss: "取消并移除下载", progress: "下载进度", pause: "暂停", retry: "重试",
       settings: "设置", language: "界面语言", automatic: "跟随浏览器",
       preparing: "准备中", queued: "排队中", downloading: "下载中", saving: "保存中",
       completed: "已完成", handedOff: "已交给浏览器", failed: "失败", cancelled: "已取消",
@@ -109,7 +109,7 @@
       errorBusy: "另一個分頁正在處理此下載，請稍後重試。", errorSourceChanged: "媒體內容已變更，請移除此工作後重新下載，避免檔案損壞。",
       downloads: "下載", downloadsCount: "下載（{count}）", mediaDownloads: "媒體下載",
       download: "下載", loadingMedia: "媒體正在載入", hide: "收合", show: "展開",
-      dismiss: "取消並移除下載", progress: "下載進度", cancel: "取消", retry: "重試",
+      dismiss: "取消並移除下載", progress: "下載進度", pause: "暫停", retry: "重試",
       settings: "設定", language: "介面語言", automatic: "跟隨瀏覽器",
       preparing: "準備中", queued: "排隊中", downloading: "下載中", saving: "儲存中",
       completed: "已完成", handedOff: "已交給瀏覽器", failed: "失敗", cancelled: "已取消",
@@ -141,7 +141,7 @@
       errorBusy: "Загрузка выполняется в другой вкладке. Повторите позже.", errorSourceChanged: "Медиа изменилось. Удалите задачу и начните заново, чтобы избежать повреждения файла.",
       downloads: "Загрузки", downloadsCount: "Загрузки ({count})", mediaDownloads: "Загрузка медиа",
       download: "Скачать", loadingMedia: "Медиа загружается", hide: "Свернуть", show: "Развернуть",
-      dismiss: "Отменить и удалить загрузку", progress: "Ход загрузки", cancel: "Отменить", retry: "Повторить",
+      dismiss: "Отменить и удалить загрузку", progress: "Ход загрузки", pause: "Приостановить", retry: "Повторить",
       settings: "Настройки", language: "Язык интерфейса", automatic: "Язык браузера",
       preparing: "Подготовка", queued: "В очереди", downloading: "Загрузка", saving: "Сохранение",
       completed: "Завершено", handedOff: "Передано браузеру", failed: "Ошибка", cancelled: "Отменено",
@@ -173,7 +173,7 @@
       errorBusy: "ဤဒေါင်းလုဒ်ကို အခြားတဘ်တွင် လုပ်ဆောင်နေသည်။ နောက်မှ ထပ်စမ်းပါ။", errorSourceChanged: "မီဒီယာ ပြောင်းလဲသွားသည်။ ဖိုင်မပျက်စီးစေရန် ဤလုပ်ငန်းကို ဖယ်ရှားပြီး ပြန်စပါ။",
       downloads: "ဒေါင်းလုဒ်များ", downloadsCount: "ဒေါင်းလုဒ်များ ({count})", mediaDownloads: "မီဒီယာဒေါင်းလုဒ်များ",
       download: "ဒေါင်းလုဒ်လုပ်ရန်", loadingMedia: "မီဒီယာကို ဖွင့်နေသည်", hide: "ဖျောက်ရန်", show: "ပြရန်",
-      dismiss: "ဒေါင်းလုဒ်ကို ပယ်ဖျက်ပြီး ဖယ်ရှားရန်", progress: "ဒေါင်းလုဒ်တိုးတက်မှု", cancel: "ပယ်ဖျက်ရန်", retry: "ထပ်စမ်းရန်",
+      dismiss: "ဒေါင်းလုဒ်ကို ပယ်ဖျက်ပြီး ဖယ်ရှားရန်", progress: "ဒေါင်းလုဒ်တိုးတက်မှု", pause: "ရပ်နားရန်", retry: "ထပ်စမ်းရန်",
       settings: "ဆက်တင်များ", language: "မျက်နှာပြင်ဘာသာစကား", automatic: "ဘရောက်ဇာဘာသာစကား",
       preparing: "ပြင်ဆင်နေသည်", queued: "စောင့်ဆိုင်းနေသည်", downloading: "ဒေါင်းလုဒ်လုပ်နေသည်", saving: "သိမ်းဆည်းနေသည်",
       completed: "ပြီးစီးပြီ", handedOff: "ဘရောက်ဇာသို့ လွှဲပေးပြီး", failed: "မအောင်မြင်ပါ", cancelled: "ပယ်ဖျက်ပြီး",
@@ -743,24 +743,34 @@
     panel.querySelector(".tel-panel-title").textContent = activeDownloads.size
       ? t("downloadsCount", { count: integerFormat.format(activeDownloads.size) }) : t("downloads");
   };
-  const cancelTask = async task => {
+  const stopTask = async (task, pause = false) => {
     if (task.finished || task.state === "saving") return;
     if (task.cancelling) return task.promise;
     task.cancelling = true;
+    task.pauseRequested = pause;
     task.controller.abort(new DOMException("Download cancelled", "AbortError"));
+    renderTask(task);
     if (task.running) return task.promise;
+    const queuedIndex = downloadQueue.indexOf(task);
+    if (queuedIndex !== -1) downloadQueue.splice(queuedIndex, 1);
+    refreshQueuedTasks();
     try {
       // A queued task may still be registering its durable record. Wait for
       // that write before deleting, so it cannot resurrect the cancelled task.
       await task.registration;
-      if (task.persisted) await withResumeLock(task, () => deleteResumeRecord(task));
-      task.persisted = false;
-      finishTask(task, "cancelled");
+      if (pause) {
+        if (!task.persisted) { await saveResumeRecord(task); task.persisted = true; }
+        finishTask(task, "paused");
+      } else {
+        if (task.persisted) await withResumeLock(task, () => deleteResumeRecord(task));
+        task.persisted = false;
+        finishTask(task, "cancelled");
+      }
     } catch (error) { finishTask(task, "failed", error); }
   };
   const dismissTask = async (task) => {
     if (!task.finished) {
-      await cancelTask(task);
+      await stopTask(task);
       if (!task.finished) return;
     }
     if (task.finished && task.persisted) {
@@ -791,9 +801,9 @@
         <span class="tel-task-state" role="status" aria-live="polite"></span>
         <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div></div><p></p></div>
         <p class="tel-task-details"></p><p class="tel-task-error"></p><p class="tel-task-resume-hint"></p>
-        <div class="tel-task-actions"><button type="button" data-action="cancel"></button><button type="button" data-action="retry" hidden></button><button type="button" data-action="restart" hidden></button><button type="button" data-action="location" hidden></button></div>`;
+        <div class="tel-task-actions"><button type="button" data-action="pause"></button><button type="button" data-action="retry" hidden></button><button type="button" data-action="restart" hidden></button><button type="button" data-action="location" hidden></button></div>`;
       card.querySelector('[data-action="dismiss"]').onclick = () => dismissTask(task);
-      card.querySelector('[data-action="cancel"]').onclick = () => cancelTask(task);
+      card.querySelector('[data-action="pause"]').onclick = () => stopTask(task, true);
       card.querySelector('[data-action="retry"]').onclick = () => {
         if (task.persisted) { refreshTaskUrl(task); startTask(task); }
         else { dismissTask(task); downloadMedia(task.url, task.kind); }
@@ -851,14 +861,15 @@
     if (task.retryExhausted) hint.textContent += " " + t("retryExhausted");
     else if (task.error?.retryAfterMs > MAX_AUTO_RETRY_DELAY) hint.textContent += " " + t("retryLater");
     hint.hidden = !task.persisted || !["paused", "failed"].includes(task.state);
-    const cancel = card.querySelector('[data-action="cancel"]');
-    cancel.textContent = t("cancel");
-    cancel.hidden = task.finished;
-    cancel.disabled = task.state === "saving";
+    const pause = card.querySelector('[data-action="pause"]');
+    pause.textContent = t("pause");
+    pause.hidden = task.finished;
+    pause.disabled = task.state === "saving" || task.cancelling;
     card.querySelector('[data-action="dismiss"]').disabled = task.state === "saving";
     const retry = card.querySelector('[data-action="retry"]');
-    retry.textContent = t(task.persisted && task.offset ? "resume" : "retry");
+    retry.textContent = t(task.persisted && (task.offset || task.state === "paused") ? "resume" : "retry");
     retry.hidden = !["paused", "failed", "cancelled"].includes(task.state);
+    retry.disabled = task.running;
     const restart = card.querySelector('[data-action="restart"]');
     restart.textContent = t("restart");
     restart.title = t("restartHint");
@@ -1040,9 +1051,11 @@
       }
       task.received = task.offset;
       if (task.controller.signal.aborted || error.name === "AbortError") {
-        try { await deleteResumeRecord(task); task.persisted = false; }
-        catch (storageError) { finishTask(task, "failed", storageError); return; }
-        finishTask(task, "cancelled");
+        try {
+          if (task.pauseRequested) await discardUncommittedChunks(task);
+          else { await deleteResumeRecord(task); task.persisted = false; }
+        } catch (storageError) { finishTask(task, "failed", storageError); return; }
+        finishTask(task, task.pauseRequested ? "paused" : "cancelled");
       } else {
         try { await discardUncommittedChunks(task); } catch { /* Retried on resume. */ }
         finishTask(task, "failed", error);
@@ -1093,7 +1106,7 @@
         finishTask(task, "failed", error);
       }).finally(() => {
         task.running = false;
-        if (task.finished) task.resolve?.(task.result);
+        if (task.finished) { renderTask(task); task.resolve?.(task.result); }
         releaseDownloadSlot(task);
       });
     }
@@ -1141,18 +1154,19 @@
     if (task.running) return task.promise;
     if (activeDownloads.has(task.key)) return activeDownloads.get(task.key).promise;
     Object.assign(task, {
-      state: "preparing", received: task.offset, controller: new AbortController(), error: null, cancelling: false,
+      state: "preparing", received: task.offset, controller: new AbortController(), error: null, cancelling: false, pauseRequested: false,
       reusingDestination: false, registration: null,
       retryAttempt: 0, retryDelay: 0, retryExhausted: false,
       localReceived: 0, localTotal: 0,
       startedAt: performance.now(), renderedAt: 0, finished: false,
     });
+    const runController = task.controller;
     task.promise = new Promise(resolve => { task.resolve = resolve; });
     activeDownloads.set(task.key, task);
     showTask(task);
     navigator.storage?.persist?.().catch(() => {});
     const enqueue = async (handle) => {
-      if (task.finished || task.cancelling || task.controller.signal.aborted) return;
+      if (task.controller !== runController || task.finished || task.cancelling || runController.signal.aborted) return;
       task.handle = handle;
       task.fileHandle = handle || undefined;
       task.preferredName = handle?.name || task.preferredName;
@@ -1195,8 +1209,10 @@
       };
       // Called directly by Resume's click handler so requestPermission can use
       // the user gesture. A permission prompt does not select a new destination.
-      authorize().catch(error => finishTask(task, "paused",
-        error.translationKey ? error : downloadError("errorFilePermission")));
+      authorize().catch(error => {
+        if (task.controller === runController && !task.cancelling) finishTask(task, "paused",
+          error.translationKey ? error : downloadError("errorFilePermission"));
+      });
       return task.promise;
     }
     try {
@@ -1206,6 +1222,7 @@
         // Keep the picker inside the original click, before queueing or fetching.
         Promise.resolve(pageWindow.showSaveFilePicker({ suggestedName: task.fileName }))
           .then(enqueue, (error) => {
+            if (task.controller !== runController || task.cancelling) return;
             if (error.name === "AbortError") finishTask(task, task.persisted ? "paused" : "cancelled");
             else enqueue(null);
           });

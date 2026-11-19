@@ -131,7 +131,9 @@ test('unvalidated staged blocks are discarded after closing the page and before 
     };
     document.querySelector('[data-action="retry"]').click();
   });
-  await second.waitForFunction(() => typeof probe === 'function');
+  await second.waitForFunction(() => typeof probe === 'function' || document.querySelector('.tel-task')?.dataset.state === 'failed');
+  assert.equal(await second.locator('.tel-task').getAttribute('data-state'), 'verifying',
+    await second.locator('.tel-task-error').textContent());
   assert.deepEqual(await second.evaluate(cache), { offset: 3, chunks: [0] });
   await second.evaluate(() => probe(response('video/mp4', 'bytes 0-2/6291459', 'abc')));
   await second.waitForFunction(() => document.querySelector('.tel-task').dataset.state === 'handedOff');
